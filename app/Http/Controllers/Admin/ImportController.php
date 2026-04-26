@@ -7,10 +7,10 @@ use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\StudentsImport;
 use App\Imports\CoursesImport;
-use App\Imports\LegacyGradesImport;
+use App\Imports\GradesImport;
+use App\Imports\LegacyPaymentsImport;
 use Illuminate\Support\Facades\DB;
 use App\Services\ThesisService;
-use App\Imports\LegacyPaymentsImport;
 
 
 class ImportController extends Controller
@@ -121,5 +121,56 @@ class ImportController extends Controller
                     ->with('detalles_errores', $res['errores']);
     }
 
-    
+    /**
+     * Método único para procesar importaciones.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function process(Request $request)
+    {
+        $request->validate([
+            'file'        => 'required|mimes:xlsx,xls',
+            'import_type' => 'required|in:students,courses,grades,legacy_payments',
+        ]);
+
+        $file = $request->file('file');
+        $type = $request->input('import_type');
+
+        switch ($type) {
+            case 'students':
+                $import = new StudentsImport;
+                break;
+            case 'courses':
+                $import = new CoursesImport;
+                break;
+            case 'grades':
+                $import = new GradesImport;
+                break;
+            case 'legacy_payments':
+                $import = new LegacyPaymentsImport;
+                break;
+            default:
+                return back()->withErrors(['import_type' => 'Tipo de importación no válido.']);
+        }
+
+        \Maatwebsite\Excel\Facades\Excel::import($import, $file);
+
+        $reporte = method_exists($import, 'reporte') ? $import->reporte : [];
+
+        $mensaje = "Importación completada.";
+        if (isset($reporte['creados'])) {
+            $mensaje .= " Creados: {$reporte['creados']}.";
+        }
+        if (isset($reporte['actualizados'])) {
+            $mensaje .= " Actualizados: {$reporte['actualizados']}.";
+        }
+        if (isset($reporte['omitidos'])) {
+            $mensaje .= " Omitidos: {$reporte['omitidos']}.";
+        }
+
+        return back()
+            ->with('success', $mensaje)
+            ->with('detalles_errores', $reporte['errores'] ?? []);
+    }
 }
