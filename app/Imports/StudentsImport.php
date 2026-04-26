@@ -24,8 +24,9 @@ class StudentsImport implements ToCollection, WithHeadingRow
             $nombres = trim(strtoupper($row['nombres'] ?? ''));
             $apellidos = trim(strtoupper($row['apellidos'] ?? ''));
 
-            if (empty($dni)) {
-                $this->reporte['errores'][] = "Fila sin DNI: " . json_encode($row);
+            // Validar que el DNI tenga exactamente 8 dígitos numéricos
+            if (empty($dni) || !preg_match('/^\d{8}$/', $dni)) {
+                $this->reporte['errores'][] = "Fila con DNI inválido (debe tener 8 dígitos): " . json_encode($row);
                 continue;
             }
 
