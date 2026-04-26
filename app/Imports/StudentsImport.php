@@ -19,10 +19,11 @@ class StudentsImport implements ToCollection, WithHeadingRow
     public function collection(Collection $rows)
     {
         foreach ($rows as $row) {
-            // Normalizar datos
-            $dni   = trim(strtoupper($row['dni'] ?? ''));
-            $nombres = trim(strtoupper($row['nombres'] ?? ''));
+            // Normalizar datos (RF-22.1: Mapeo Inteligente)
+            $dni       = trim(strtoupper($row['dni'] ?? ''));
+            $nombres   = trim(strtoupper($row['nombres'] ?? ''));
             $apellidos = trim(strtoupper($row['apellidos'] ?? ''));
+            $email     = trim(strtolower($row['email'] ?? '')); // email en minúsculas
 
             // Validar que el DNI tenga exactamente 8 dígitos numéricos
             if (empty($dni) || !preg_match('/^\d{8}$/', $dni)) {
@@ -30,13 +31,21 @@ class StudentsImport implements ToCollection, WithHeadingRow
                 continue;
             }
 
+            // Preparar datos para actualizar o crear
+            $data = [
+                'nombres'   => $nombres,
+                'apellidos' => $apellidos,
+            ];
+
+            // Si hay email, lo incluimos (updateOrCreate maneja duplicados)
+            if (!empty($email)) {
+                $data['email'] = $email;
+            }
+
             // Buscar o crear persona
             $person = Person::updateOrCreate(
                 ['dni' => $dni],
-                [
-                    'nombres'   => $nombres,
-                    'apellidos' => $apellidos,
-                ]
+                $data
             );
 
             if ($person->wasRecentlyCreated) {

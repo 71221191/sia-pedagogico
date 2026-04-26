@@ -1,81 +1,138 @@
 <script setup>
 import { useForm, Head } from '@inertiajs/vue3';
-import { 
-    Upload, 
-    FileSpreadsheet, 
-    CreditCard, 
-    Users, 
-    BookOpen,
-    AlertCircle,
-    CheckCircle2
-} from 'lucide-vue-next';
+import { ref } from 'vue';
+import { Upload, FileSpreadsheet, Users, BookOpen, GraduationCap, DollarSign, AlertCircle, CheckCircle2 } from 'lucide-vue-next';
 import AppLayout from '@/layouts/AppLayout.vue';
 
-const formPayments = useForm({ file: null });
-const formStudents = useForm({ file: null });
-const formCourses = useForm({ file: null });
+// Opciones de importación
+const importTypes = [
+    { value: 'students', label: 'Alumnos', icon: Users, description: 'Importar datos personales de estudiantes' },
+    { value: 'courses', label: 'Cursos', icon: BookOpen, description: 'Importar catálogo de cursos académicos' },
+    { value: 'grades', label: 'Notas', icon: GraduationCap, description: 'Importar calificaciones de estudiantes' },
+    { value: 'payments', label: 'Pagos', icon: DollarSign, description: 'Importar pagos históricos' },
+];
 
-const submitLegacyPayments = () => {
-    formPayments.post(route('admin.import.payments-legacy'), {
+const selectedType = ref(null);
+const dragOver = ref(false);
+
+const form = useForm({
+    file: null,
+    import_type: null,
+});
+
+function selectType(type) {
+    selectedType.value = type;
+    form.import_type = type;
+}
+
+function onFileChange(event) {
+    const file = event.target.files[0];
+    if (file) {
+        form.file = file;
+    }
+}
+
+function onDrop(event) {
+    dragOver.value = false;
+    const file = event.dataTransfer.files[0];
+    if (file) {
+        form.file = file;
+    }
+}
+
+function submit() {
+    form.post(route('admin.imports.process'), {
         onSuccess: () => {
-            formPayments.reset();
-            alert('¡Migración de pagos completada!');
+            form.reset();
+            selectedType.value = null;
         },
     });
-};
-
-// ... Aquí irían las otras funciones de envío para alumnos y cursos
+}
 </script>
 
 <template>
-    <Head title="Centro de Importación Masiva" />
+    <Head title="Importación Masiva" />
     <AppLayout>
         <div class="p-8 max-w-5xl mx-auto bg-gray-50 min-h-screen">
             <h1 class="text-3xl font-black text-gray-900 uppercase tracking-tighter mb-8 flex items-center">
                 <Upload class="mr-3 w-8 h-8 text-indigo-600" />
-                Centro de Carga Masiva (Excel)
+                Centro de Importación Masiva
             </h1>
 
-            <div class="grid grid-cols-1 gap-8">
-                
-                <!-- SECCIÓN 1: PAGOS HISTÓRICOS -->
-                <div class="bg-white p-8 rounded-[3rem] shadow-xl border border-gray-100 transition hover:border-indigo-300">
-                    <div class="flex items-start justify-between mb-6">
-                        <div>
-                            <h2 class="text-xl font-black text-gray-800 uppercase flex items-center">
-                                <CreditCard class="mr-3 w-6 h-6 text-emerald-500" />
-                                Migración de Pagos Históricos (2013 - 2025)
-                            </h2>
-                            <p class="text-sm text-gray-500 italic mt-1">Use esta opción para cargar los 4,500 registros del sistema anterior.</p>
-                        </div>
-                        <span class="bg-emerald-50 text-emerald-600 px-3 py-1 rounded-full text-[10px] font-black uppercase">Contabilidad</span>
-                    </div>
-
-                    <form @submit.prevent="submitLegacyPayments" class="bg-gray-50 p-6 rounded-3xl border-2 border-dashed border-gray-200">
-                        <div class="flex flex-col md:flex-row items-center gap-4">
-                            <input type="file" @input="formPayments.file = $event.target.files[0]" accept=".xlsx,.xls" 
-                                   class="flex-1 text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-indigo-600 file:text-white file:font-bold cursor-pointer" />
-                            
-                            <button :disabled="formPayments.processing" 
-                                    class="w-full md:w-auto bg-gray-900 text-white px-8 py-3 rounded-2xl font-black text-xs uppercase shadow-lg hover:bg-indigo-600 transition flex items-center justify-center">
-                                <FileSpreadsheet class="w-4 h-4 mr-2" />
-                                {{ formPayments.processing ? 'PROCESANDO FILAS...' : 'INICIAR MIGRACIÓN' }}
-                            </button>
-                        </div>
-                        <div v-if="formPayments.errors.file" class="text-red-500 text-[10px] font-bold mt-2 uppercase">{{ formPayments.errors.file }}</div>
-                    </form>
+            <!-- Mensajes de éxito / error -->
+            <div v-if="$page.props.flash?.success" class="mb-6 p-4 bg-green-100 border border-green-300 text-green-800 rounded-xl flex items-center">
+                <CheckCircle2 class="w-5 h-5 mr-2" />
+                {{ $page.props.flash.success }}
+            </div>
+            <div v-if="$page.props.flash?.detalles_errores?.length" class="mb-6 p-4 bg-red-100 border border-red-300 text-red-800 rounded-xl">
+                <div class="flex items-center mb-2">
+                    <AlertCircle class="w-5 h-5 mr-2" />
+                    <span class="font-bold">Errores encontrados:</span>
                 </div>
+                <ul class="list-disc list-inside text-sm">
+                    <li v-for="(error, idx) in $page.props.flash.detalles_errores" :key="idx">{{ error }}</li>
+                </ul>
+            </div>
 
-                <!-- SECCIÓN 2: ALUMNOS Y CURSOS (Puedes añadir los otros forms aquí igual que el de arriba) -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 opacity-60">
-                     <div class="bg-white p-6 rounded-[2.5rem] border border-gray-100 flex items-center justify-center italic text-gray-400 text-xs">
-                         Otras importaciones (Alumnos/Cursos)
-                     </div>
-                     <div class="bg-white p-6 rounded-[2.5rem] border border-gray-100 flex items-center justify-center italic text-gray-400 text-xs">
-                         Próximamente
-                     </div>
-                </div>
+            <!-- Selector visual de tipo de importación -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                <button
+                    v-for="type in importTypes"
+                    :key="type.value"
+                    @click="selectType(type.value)"
+                    :class="[
+                        'p-6 rounded-2xl border-2 transition-all duration-200 text-left',
+                        selectedType === type.value
+                            ? 'border-indigo-500 bg-indigo-50 shadow-md'
+                            : 'border-gray-200 bg-white hover:border-indigo-300 hover:shadow-sm'
+                    ]"
+                >
+                    <component :is="type.icon" class="w-8 h-8 mb-3 text-indigo-600" />
+                    <h3 class="font-bold text-gray-900">{{ type.label }}</h3>
+                    <p class="text-xs text-gray-500 mt-1">{{ type.description }}</p>
+                </button>
+            </div>
 
+            <!-- Zona de Drag & Drop -->
+            <div
+                @dragover.prevent="dragOver = true"
+                @dragleave.prevent="dragOver = false"
+                @drop.prevent="onDrop"
+                :class="[
+                    'border-2 border-dashed rounded-3xl p-10 text-center transition-all',
+                    dragOver ? 'border-indigo-500 bg-indigo-50' : 'border-gray-300 bg-white'
+                ]"
+            >
+                <FileSpreadsheet class="w-12 h-12 mx-auto mb-4 text-gray-400" />
+                <p class="text-gray-600 font-medium mb-2">
+                    Arrastra tu archivo Excel aquí o haz clic para seleccionarlo
+                </p>
+                <p class="text-xs text-gray-400 mb-4">Formatos aceptados: .xlsx, .xls, .csv</p>
+                <input
+                    type="file"
+                    @input="onFileChange"
+                    accept=".xlsx,.xls,.csv"
+                    class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-indigo-600 file:text-white file:font-bold cursor-pointer"
+                />
+                <p v-if="form.file" class="mt-2 text-sm text-indigo-600 font-medium">
+                    Archivo seleccionado: {{ form.file.name }}
+                </p>
+            </div>
+
+            <!-- Botón de envío -->
+            <div class="mt-8 text-center">
+                <button
+                    @click="submit"
+                    :disabled="!form.file || !selectedType || form.processing"
+                    class="px-10 py-4 bg-indigo-600 text-white font-bold text-lg rounded-2xl shadow-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center justify-center mx-auto"
+                >
+                    <Upload v-if="!form.processing" class="w-5 h-5 mr-2" />
+                    <svg v-else class="animate-spin w-5 h-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                    </svg>
+                    {{ form.processing ? 'Procesando...' : 'Iniciar Importación' }}
+                </button>
             </div>
         </div>
     </AppLayout>

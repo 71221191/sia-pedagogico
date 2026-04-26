@@ -18,6 +18,7 @@ class LegacyPaymentsImport implements ToCollection, WithHeadingRow
     public function collection(Collection $rows)
     {
         foreach ($rows as $row) {
+            // Normalizar datos (RF-22.1: Mapeo Inteligente)
             $dni    = trim(strtoupper($row['dni'] ?? ''));
             $monto  = trim($row['monto'] ?? '');
             $fecha  = trim($row['fecha'] ?? '');

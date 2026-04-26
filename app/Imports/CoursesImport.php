@@ -19,6 +19,7 @@ class CoursesImport implements ToCollection, WithHeadingRow
     public function collection(Collection $rows)
     {
         foreach ($rows as $row) {
+            // Normalizar datos (RF-22.1: Mapeo Inteligente)
             $codigo = trim(strtoupper($row['codigo'] ?? ''));
             $nombre = trim(strtoupper($row['nombre'] ?? ''));
 
