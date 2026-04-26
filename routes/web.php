@@ -176,6 +176,18 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/secciones-cursos/{courseSection}/horario', [ScheduleController::class, 'edit'])->name('course_sections.schedule.edit');
         Route::post('/secciones-cursos/{courseSection}/horario', [ScheduleController::class, 'store'])->name('course_sections.schedule.store');
         Route::delete('/horarios/{schedule}', [ScheduleController::class, 'destroy'])->name('course_sections.schedule.destroy');
+
+        Route::post('/importar-pagos-historial', [ImportController::class, 'importLegacyPayments'])->name('import.payments-legacy');
+
+        // Dentro de Route::middleware(['role:admin'])->prefix('admin')...
+        Route::get('/importaciones', function() {
+            return Inertia::render('Admin/Imports/Index');
+        })->name('imports.index');
+
+        // Esta es la ruta para procesar el Excel de 4,500 pagos
+        Route::post('/importar-pagos-legacy', [App\Http\Controllers\Admin\ImportController::class, 'importLegacyPayments'])
+            ->name('admin.import.payments-legacy');
+
     });
 
     // Solo Tesorería y Admin pueden entrar aquí

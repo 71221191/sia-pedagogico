@@ -11,11 +11,20 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('grade_scales', function (Blueprint $table) {
+        /* Schema::create('grade_scales', function (Blueprint $table) {
             $table->id();
             $table->string('name'); // Logrado, 20, etc.
             $table->decimal('numeric_equivalent', 5, 2);
             $table->foreignId('study_plan_id')->constrained();
+            $table->timestamps();
+        }); */
+
+        Schema::create('grade_scales', function (Blueprint $table) {
+            $table->id();
+            $table->string('name'); // Logrado, 20, etc.
+            $table->decimal('numeric_equivalent', 5, 2);
+            // LA SOLUCIÓN: lo hacemos nullable() y en cascada por si se borra el plan
+            $table->foreignId('study_plan_id')->nullable()->constrained()->onDelete('cascade');
             $table->timestamps();
         });
 

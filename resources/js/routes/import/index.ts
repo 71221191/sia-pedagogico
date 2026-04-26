@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../wayfinder'
 /**
 * @see \App\Http\Controllers\Admin\ImportController::students
- * @see app/Http/Controllers/Admin/ImportController.php:47
+ * @see app/Http/Controllers/Admin/ImportController.php:48
  * @route '/importar-alumnos'
  */
 export const students = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -16,7 +16,7 @@ students.definition = {
 
 /**
 * @see \App\Http\Controllers\Admin\ImportController::students
- * @see app/Http/Controllers/Admin/ImportController.php:47
+ * @see app/Http/Controllers/Admin/ImportController.php:48
  * @route '/importar-alumnos'
  */
 students.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ students.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Admin\ImportController::students
- * @see app/Http/Controllers/Admin/ImportController.php:47
+ * @see app/Http/Controllers/Admin/ImportController.php:48
  * @route '/importar-alumnos'
  */
 students.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -35,7 +35,7 @@ students.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
     /**
 * @see \App\Http\Controllers\Admin\ImportController::students
- * @see app/Http/Controllers/Admin/ImportController.php:47
+ * @see app/Http/Controllers/Admin/ImportController.php:48
  * @route '/importar-alumnos'
  */
     const studentsForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -45,7 +45,7 @@ students.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
             /**
 * @see \App\Http\Controllers\Admin\ImportController::students
- * @see app/Http/Controllers/Admin/ImportController.php:47
+ * @see app/Http/Controllers/Admin/ImportController.php:48
  * @route '/importar-alumnos'
  */
         studentsForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -56,7 +56,7 @@ students.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     students.form = studentsForm
 /**
 * @see \App\Http\Controllers\Admin\ImportController::courses
- * @see app/Http/Controllers/Admin/ImportController.php:18
+ * @see app/Http/Controllers/Admin/ImportController.php:19
  * @route '/importar-cursos-proceso'
  */
 export const courses = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -71,7 +71,7 @@ courses.definition = {
 
 /**
 * @see \App\Http\Controllers\Admin\ImportController::courses
- * @see app/Http/Controllers/Admin/ImportController.php:18
+ * @see app/Http/Controllers/Admin/ImportController.php:19
  * @route '/importar-cursos-proceso'
  */
 courses.url = (options?: RouteQueryOptions) => {
@@ -80,7 +80,7 @@ courses.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Admin\ImportController::courses
- * @see app/Http/Controllers/Admin/ImportController.php:18
+ * @see app/Http/Controllers/Admin/ImportController.php:19
  * @route '/importar-cursos-proceso'
  */
 courses.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -90,7 +90,7 @@ courses.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
     /**
 * @see \App\Http\Controllers\Admin\ImportController::courses
- * @see app/Http/Controllers/Admin/ImportController.php:18
+ * @see app/Http/Controllers/Admin/ImportController.php:19
  * @route '/importar-cursos-proceso'
  */
     const coursesForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -100,7 +100,7 @@ courses.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
             /**
 * @see \App\Http\Controllers\Admin\ImportController::courses
- * @see app/Http/Controllers/Admin/ImportController.php:18
+ * @see app/Http/Controllers/Admin/ImportController.php:19
  * @route '/importar-cursos-proceso'
  */
         coursesForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -111,7 +111,7 @@ courses.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     courses.form = coursesForm
 /**
 * @see \App\Http\Controllers\Admin\ImportController::active_students
- * @see app/Http/Controllers/Admin/ImportController.php:80
+ * @see app/Http/Controllers/Admin/ImportController.php:81
  * @route '/importar-alumnos-activos'
  */
 export const active_students = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -126,7 +126,7 @@ active_students.definition = {
 
 /**
 * @see \App\Http\Controllers\Admin\ImportController::active_students
- * @see app/Http/Controllers/Admin/ImportController.php:80
+ * @see app/Http/Controllers/Admin/ImportController.php:81
  * @route '/importar-alumnos-activos'
  */
 active_students.url = (options?: RouteQueryOptions) => {
@@ -135,7 +135,7 @@ active_students.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Admin\ImportController::active_students
- * @see app/Http/Controllers/Admin/ImportController.php:80
+ * @see app/Http/Controllers/Admin/ImportController.php:81
  * @route '/importar-alumnos-activos'
  */
 active_students.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -145,7 +145,7 @@ active_students.post = (options?: RouteQueryOptions): RouteDefinition<'post'> =>
 
     /**
 * @see \App\Http\Controllers\Admin\ImportController::active_students
- * @see app/Http/Controllers/Admin/ImportController.php:80
+ * @see app/Http/Controllers/Admin/ImportController.php:81
  * @route '/importar-alumnos-activos'
  */
     const active_studentsForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -155,7 +155,7 @@ active_students.post = (options?: RouteQueryOptions): RouteDefinition<'post'> =>
 
             /**
 * @see \App\Http\Controllers\Admin\ImportController::active_students
- * @see app/Http/Controllers/Admin/ImportController.php:80
+ * @see app/Http/Controllers/Admin/ImportController.php:81
  * @route '/importar-alumnos-activos'
  */
         active_studentsForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -166,7 +166,7 @@ active_students.post = (options?: RouteQueryOptions): RouteDefinition<'post'> =>
     active_students.form = active_studentsForm
 /**
 * @see \App\Http\Controllers\Admin\ImportController::grades
- * @see app/Http/Controllers/Admin/ImportController.php:61
+ * @see app/Http/Controllers/Admin/ImportController.php:62
  * @route '/importar-notas-proceso'
  */
 export const grades = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -181,7 +181,7 @@ grades.definition = {
 
 /**
 * @see \App\Http\Controllers\Admin\ImportController::grades
- * @see app/Http/Controllers/Admin/ImportController.php:61
+ * @see app/Http/Controllers/Admin/ImportController.php:62
  * @route '/importar-notas-proceso'
  */
 grades.url = (options?: RouteQueryOptions) => {
@@ -190,7 +190,7 @@ grades.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Admin\ImportController::grades
- * @see app/Http/Controllers/Admin/ImportController.php:61
+ * @see app/Http/Controllers/Admin/ImportController.php:62
  * @route '/importar-notas-proceso'
  */
 grades.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -200,7 +200,7 @@ grades.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
     /**
 * @see \App\Http\Controllers\Admin\ImportController::grades
- * @see app/Http/Controllers/Admin/ImportController.php:61
+ * @see app/Http/Controllers/Admin/ImportController.php:62
  * @route '/importar-notas-proceso'
  */
     const gradesForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -210,7 +210,7 @@ grades.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
             /**
 * @see \App\Http\Controllers\Admin\ImportController::grades
- * @see app/Http/Controllers/Admin/ImportController.php:61
+ * @see app/Http/Controllers/Admin/ImportController.php:62
  * @route '/importar-notas-proceso'
  */
         gradesForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

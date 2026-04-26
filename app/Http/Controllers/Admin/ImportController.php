@@ -10,6 +10,7 @@ use App\Imports\CoursesImport;
 use App\Imports\LegacyGradesImport;
 use Illuminate\Support\Facades\DB;
 use App\Services\ThesisService;
+use App\Imports\LegacyPaymentsImport;
 
 
 class ImportController extends Controller
@@ -102,4 +103,23 @@ class ImportController extends Controller
             ->with('detalles_errors', $res['errores'])
             ->with('detalles_actualizados', $res['actualizados_lista']);
     }
+
+    public function importLegacyPayments(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|mimes:xlsx,xls'
+        ]);
+
+        $importador = new LegacyPaymentsImport;
+
+        // Ejecutamos la importación
+        \Maatwebsite\Excel\Facades\Excel::import($importador, $request->file('file'));
+
+        $res = $importador->reporte;
+
+        return back()->with('success', "Proceso terminado. Pagos migrados: {$res['procesados']}. Omitidos: {$res['omitidos']}.")
+                    ->with('detalles_errores', $res['errores']);
+    }
+
+    
 }

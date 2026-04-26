@@ -11,24 +11,37 @@ class CatalogSeeder extends Seeder
 {
     public function run(): void
     {
-        $now = now(); // Para que todos tengan fecha de creación
+        $now = now();
 
-        // 0. USUARIO ADMIN BASE (Si no existe)
-        User::firstOrCreate(['id' => 1], [
-            'username' => 'admin',
-            'email' => 'admin@instituto.edu.pe',
-            'password' => Hash::make('admin123'),
-            'is_active' => true,
-        ]);
-
-
-        
-
-        // 1. TIPOS DE DOCUMENTO
+        // 1. PRIMERO LOS CATÁLOGOS BASE (Sin estos nada funciona)
+        // Tipos de Documento
         DB::table('identity_document_types')->insertOrIgnore([
             ['id' => 1, 'name' => 'DNI', 'short_name' => 'DNI', 'created_at' => $now, 'updated_at' => $now],
             ['id' => 2, 'name' => 'CARNET DE EXTRANJERÍA', 'short_name' => 'CE', 'created_at' => $now, 'updated_at' => $now],
         ]);
+
+        // 2. AHORA SÍ EL USUARIO ADMIN (Porque el ID 1 de documento ya existe)
+        $admin = \App\Models\User::firstOrCreate(['username' => 'admin'], [
+            'email' => 'admin@instituto.edu.pe',
+            'password' => \Illuminate\Support\Facades\Hash::make('admin123'),
+            'is_active' => true,
+        ]);
+
+        // Le asignamos el rol
+        $admin->assignRole('admin');
+
+        // Le creamos su perfil humano
+        \App\Models\Person::firstOrCreate(['user_id' => $admin->id], [
+            'identity_document_type_id' => 1, // Ahora sí existe el ID 1
+            'names' => 'ADMINISTRADOR',
+            'last_name_p' => 'DEL',
+            'last_name_m' => 'SISTEMA',
+            'dni' => '00000001',
+            'gender' => 'M',
+            'birth_date' => '1990-01-01',
+            'nationality' => 'PERUANA'
+        ]);
+
 
         // 2. TIPOS DE MATRÍCULA (Lista completa)
         $tiposMatricula = [

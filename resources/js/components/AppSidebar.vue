@@ -15,7 +15,7 @@ import {
 import { dashboard } from '@/routes';
 import { type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/vue3';
-import { BookOpen, Folder, LayoutGrid, ReceiptText, ClipboardList, FileSearch, School,ClipboardCheck, Users, Search, GraduationCap, BookMarked, DoorOpen, CalendarCheck, Calendar } from 'lucide-vue-next';
+import { BookOpen, Folder, LayoutGrid, ReceiptText, ClipboardList, FileSearch, School,ClipboardCheck, Users, Search, GraduationCap, BookMarked, DoorOpen, CalendarCheck, Calendar, Upload } from 'lucide-vue-next';
 import AppLogo from './AppLogo.vue';
 
 // Importación de rutas (Asegúrate de que estos archivos existan en tu proyecto)
@@ -120,6 +120,11 @@ const adminNavItems: NavItem[] = [
         href: route('admin.classrooms.index'),
         icon: DoorOpen,
     },
+    {
+        title: 'Carga Masiva (Excel)',
+        href: route('admin.imports.index'),
+        icon: Upload, // O FileSpreadsheet
+    },
 ];
 
 const studentNavItems: NavItem[] = [
@@ -133,7 +138,7 @@ const studentNavItems: NavItem[] = [
         href: route('student.schedule'),
         icon: Calendar,
     },
-];  
+];
 
 const treasuryNavItems = [
     {

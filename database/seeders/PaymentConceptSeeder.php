@@ -37,8 +37,13 @@ class PaymentConceptSeeder extends Seeder
             ['code' => '1.3.2 3.1 99', 'name' => 'Curso de subsanación matrícula ciclo - 0', 'amount' => 50.00],
             ['code' => '1.3.2 3.1 99', 'name' => 'Curso de subsanación por hora', 'amount' => 10.00],
             ['code' => '1.3.2 3.1 99', 'name' => 'Curso de subsanación por crédito', 'amount' => 20.00],
-            /* ['code' => '1.3.2 3.1 99', 'name' => 'Formato de título gratuito', 'amount' => 00.00], */
-
+            [
+                'id' => 99,
+                'code' => 'LEGADO',
+                'name' => 'PAGO MIGRADO (HISTORIAL SISTEMA ANTERIOR)',
+                'amount' => 0.00, // El monto real se jalará del Excel
+                'is_active' => false // Para que el alumno no pueda elegirlo en trámites nuevos
+            ],
         ];
 
         foreach ($concepts as $c) {

@@ -11,6 +11,9 @@ import competencies from './competencies'
 import domains from './domains'
 import thesis from './thesis'
 import classrooms from './classrooms'
+import importMethod from './import'
+import imports from './imports'
+import admin from './admin'
 /**
  * @see routes/web.php:99
  * @route '/admin/dashboard'
@@ -82,7 +85,7 @@ dashboard.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
         })
     
     dashboard.form = dashboardForm
-const admin = {
+const adminNamespace = {
     dashboard: Object.assign(dashboard, dashboard),
 centrosPractica: Object.assign(centrosPractica, centrosPractica),
 asignacionesPractica: Object.assign(asignacionesPractica, asignacionesPractica),
@@ -96,6 +99,9 @@ competencies: Object.assign(competencies, competencies),
 domains: Object.assign(domains, domains),
 thesis: Object.assign(thesis, thesis),
 classrooms: Object.assign(classrooms, classrooms),
+import: Object.assign(importMethod, importMethod),
+imports: Object.assign(imports, imports),
+admin: Object.assign(admin, admin),
 }
 
-export default admin
+export default adminNamespace
