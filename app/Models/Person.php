@@ -52,6 +52,11 @@ class Person extends Model
         return $this->belongsToMany(ThesisProject::class, 'thesis_authors', 'student_id', 'thesis_project_id');
     }
 
+    public function enrollments()
+    {
+        return $this->hasMany(\App\Models\Enrollment::class);
+    }
+
     public function rankings()
     {
         return $this->hasMany(AcademicRanking::class);

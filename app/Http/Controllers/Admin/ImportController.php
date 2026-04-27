@@ -9,6 +9,7 @@ use App\Imports\StudentsImport;
 use App\Imports\CoursesImport;
 use App\Imports\GradesImport;
 use App\Imports\LegacyPaymentsImport;
+use App\Imports\ActiveStudentsImport;
 
 class ImportController extends Controller
 {
@@ -23,7 +24,7 @@ class ImportController extends Controller
         // Validar archivo (Excel o CSV) y tipo de importación
         $request->validate([
             'file'        => 'required|mimes:xlsx,xls,csv|max:10240', // 10 MB máximo
-            'import_type' => 'required|in:students,courses,grades,payments',
+            'import_type' => 'required|in:students,courses,grades,payments,active_students',
         ]);
 
         $file = $request->file('file');
@@ -43,6 +44,9 @@ class ImportController extends Controller
             case 'payments':
                 $import = new LegacyPaymentsImport;
                 break;
+            case 'active_students':
+                $import = new ActiveStudentsImport;
+                break;
             default:
                 return back()->withErrors(['import_type' => 'Tipo de importación no válido.']);
         }
@@ -55,6 +59,9 @@ class ImportController extends Controller
 
         // Construir mensaje de respuesta
         $mensaje = "Importación completada.";
+        if (isset($reporte['nuevos'])) {
+            $mensaje .= " Nuevos: {$reporte['nuevos']}.";
+        }
         if (isset($reporte['creados'])) {
             $mensaje .= " Creados: {$reporte['creados']}.";
         }
@@ -67,6 +74,27 @@ class ImportController extends Controller
         if (isset($reporte['procesados'])) {
             $mensaje .= " Procesados: {$reporte['procesados']}.";
         }
+
+        return back()
+            ->with('success', $mensaje)
+            ->with('detalles_errores', $reporte['errores'] ?? []);
+    }
+
+    /**
+     * Método específico para importar alumnos activos 2026-I (usado por ruta dedicada)
+     */
+    public function importActiveStudents(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|mimes:xlsx,xls,csv|max:10240',
+        ]);
+
+        $import = new ActiveStudentsImport;
+        Excel::import($import, $request->file('file'));
+
+        $reporte = $import->reporte;
+
+        $mensaje = "Importación de alumnos activos completada. Nuevos: {$reporte['nuevos']}, Actualizados: {$reporte['actualizados']}.";
 
         return back()
             ->with('success', $mensaje)

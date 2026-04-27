@@ -285,3 +285,7 @@ Route::get('/admin/importaciones', function () {
 // Ruta única para procesar la importación
 Route::post('/admin/importaciones/procesar', [ImportController::class, 'process'])
     ->name('admin.imports.process');
+
+// Ruta específica para importar alumnos activos 2026-I
+Route::post('/admin/importaciones/alumnos-activos', [ImportController::class, 'importActiveStudents'])
+    ->name('admin.imports.active-students');
