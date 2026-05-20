@@ -12,6 +12,7 @@ class CourseSection extends Model
     protected $fillable = [
         'course_id',
         'academic_period_id',
+        'shift_id',
         'name',
         'teacher_id',
         'vacancy_limit',
@@ -64,5 +65,19 @@ class CourseSection extends Model
             ->where('type', 'syllabus')
             ->where('status', 'approved')
             ->exists();
+    }
+    /**
+     * Obtener el turno asociado a esta sección.
+     */
+    public function shift()
+    {
+        return $this->belongsTo(Shift::class, 'shift_id');
+    }
+    /**
+     * Obtener las unidades académicas (I, II, III...) de este curso.
+     */
+    public function academicUnits(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(AcademicUnit::class)->orderBy('order');
     }
 }

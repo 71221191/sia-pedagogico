@@ -11,6 +11,7 @@ use App\Models\Schedule;
 use App\Services\ScheduleService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use App\Models\StudyPlan;
 
 class ScheduleController extends Controller
 {
@@ -23,24 +24,46 @@ class ScheduleController extends Controller
 
     public function edit(CourseSection $courseSection)
     {
-        // Cargamos la data necesaria para el constructor
-        $courseSection->load(['course', 'teacher', 'academicPeriod']);
+        $courseSection->load(['course.studyPlan.studyProgram', 'academicPeriod']);
+
+        // 1. Buscamos cursos del mismo Periodo, Plan, Ciclo, Nombre Y TURNO
+        $sections = CourseSection::with(['course', 'teacher'])
+            ->where('academic_period_id', $courseSection->academic_period_id)
+            ->where('name', $courseSection->name)
+            ->where('shift_id', $courseSection->shift_id) // <--- Filtro de turno
+            ->whereHas('course', function($q) use ($courseSection) {
+                $q->where('study_plan_id', $courseSection->course->study_plan_id)
+                ->where('cycle', $courseSection->course->cycle);
+            })->get();
+
+        // 2. Filtramos los bloques horarios (TimeSlots) según el turno de la sección
+        // Si shift_id es 1 (Mañana), traemos solo mañana. Si es 2 (Tarde), solo tarde.
+        $turnoNombre = ($courseSection->shift_id == 1) ? 'mañana' : 'tarde';
+
+        $timeSlots = \App\Models\TimeSlot::where('shift', $turnoNombre)
+            ->orderBy('start_time', 'asc') // <--- AHORA SÍ SALDRÁN EN ORDEN DE HORA
+            ->get();
 
         return Inertia::render('Admin/Schedules/Editor', [
-            'section' => $courseSection,
-            'timeSlots' => TimeSlot::orderBy('shift')->orderBy('start_time')->get(),
-            'classrooms' => Classroom::where('is_active', true)->get(),
-            'currentSchedules' => Schedule::where('course_section_id', $courseSection->id)->get(),
+            'sections' => $sections,
+            'plan' => $courseSection->course->studyPlan->load('studyProgram'),
+            'cycle' => $courseSection->course->cycle,
+            'sectionName' => $courseSection->name,
+            'shiftId' => $courseSection->shift_id, // <--- Enviamos el turno a la vista
+            'academicPeriod' => $courseSection->academicPeriod,
+            'timeSlots' => $timeSlots, // <--- Solo los bloques que corresponden
+            'classrooms' => \App\Models\Classroom::where('is_active', true)->get(),
+            'currentSchedules' => \App\Models\Schedule::whereIn('course_section_id', $sections->pluck('id'))
+                ->with(['course', 'classroom', 'section.teacher'])
+                ->get(),
             'days' => [
-                ['id' => 1, 'name' => 'Lunes'],
-                ['id' => 2, 'name' => 'Martes'],
-                ['id' => 3, 'name' => 'Miércoles'],
-                ['id' => 4, 'name' => 'Jueves'],
+                ['id' => 1, 'name' => 'Lunes'], ['id' => 2, 'name' => 'Martes'],
+                ['id' => 3, 'name' => 'Miércoles'], ['id' => 4, 'name' => 'Jueves'],
                 ['id' => 5, 'name' => 'Viernes'],
             ]
         ]);
     }
-
+    // El parámetro $courseSection debe estar aquí para recibir el ID de la URL
     public function store(Request $request, CourseSection $courseSection)
     {
         $validated = $request->validate([
@@ -49,9 +72,9 @@ class ScheduleController extends Controller
             'classroom_id' => 'nullable|exists:classrooms,id',
         ]);
 
-        // 1. Usamos el servicio para validar choques
+        // Validamos choques usando el docente de ESTA sección
         $conflicts = $this->scheduleService->checkConflicts(
-            $courseSection->teacher_id,
+            $courseSection->teacher_id, // Usamos el ID de la sección de la URL
             $validated['classroom_id'],
             $validated['day_of_week'],
             $validated['time_slot_id'],
@@ -62,7 +85,7 @@ class ScheduleController extends Controller
             return back()->withErrors(['collision' => $conflicts[0]]);
         }
 
-        // 2. Si todo está bien, guardamos el bloque
+        // Guardamos el bloque
         Schedule::create([
             'course_section_id' => $courseSection->id,
             'course_id' => $courseSection->course_id,
@@ -73,7 +96,7 @@ class ScheduleController extends Controller
             'day_of_week' => $validated['day_of_week'],
         ]);
 
-        return back()->with('success', 'Bloque horario asignado.');
+        return back()->with('success', 'Bloque asignado.');
     }
 
     public function destroy(Schedule $schedule)

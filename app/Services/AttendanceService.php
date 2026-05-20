@@ -14,7 +14,9 @@ class AttendanceService
      */
     public function getStudentsForAttendance(ClassSession $session)
     {
-        // Buscamos los alumnos matriculados en esta sección
+        $section = CourseSection::find($session->course_section_id);
+        $totalPlanned = $section->total_planned_sessions ?? 32;
+
         return DB::table('enrollment_details')
             ->join('enrollments', 'enrollment_details.enrollment_id', '=', 'enrollments.id')
             ->join('people', 'enrollments.person_id', '=', 'people.id')
@@ -22,16 +24,27 @@ class AttendanceService
             ->select('people.id', 'people.names', 'people.last_name_p', 'people.last_name_m')
             ->orderBy('people.last_name_p')
             ->get()
-            ->map(function($student) use ($session) {
-                // Buscamos si ya tiene una asistencia grabada para esta sesión
+            ->map(function($student) use ($session, $totalPlanned) {
                 $record = AttendanceRecord::where('class_session_id', $session->id)
                     ->where('person_id', $student->id)
                     ->first();
 
+                // Calculamos faltas acumuladas para mostrar alerta en tiempo real
+                $absences = AttendanceRecord::join('class_sessions', 'attendance_records.class_session_id', '=', 'class_sessions.id')
+                    ->where('class_sessions.course_section_id', $session->course_section_id)
+                    ->where('attendance_records.person_id', $student->id)
+                    ->where('attendance_records.status', 'absent')
+                    ->count();
+
                 return [
                     'person_id' => $student->id,
                     'full_name' => "{$student->last_name_p} {$student->last_name_m}, {$student->names}",
-                    'status' => $record ? $record->status : 'present', // Por defecto todos presentes
+                    'status'    => $record ? $record->status : 'present',
+                    'warning'   => [
+                        'absences'   => $absences,
+                        'percentage' => round(($absences / $totalPlanned) * 100, 1),
+                        'is_critical'=> (($absences / $totalPlanned) * 100) >= 25 // Alerta al llegar al 25%
+                    ]
                 ];
             });
     }

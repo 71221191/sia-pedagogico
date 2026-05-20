@@ -6,18 +6,19 @@ import {
     DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import UserInfo from '@/components/UserInfo.vue';
-import { logout } from '@/routes';
 import { edit } from '@/routes/profile';
 import type { User } from '@/types';
 import { Link, router } from '@inertiajs/vue3';
 import { LogOut, Settings } from 'lucide-vue-next';
+import { route } from 'ziggy-js';
 
 type Props = {
     user: User;
 };
 
 const handleLogout = () => {
-    router.flushAll();
+    // Esta es la forma correcta de cerrar sesión en Inertia
+    router.post(route('logout'));
 };
 
 defineProps<Props>();
@@ -42,8 +43,8 @@ defineProps<Props>();
     <DropdownMenuItem :as-child="true">
         <Link
             class="block w-full cursor-pointer"
-            :href="logout()"
-            @click="handleLogout"
+            :href="route('logout')"
+            method="post"
             as="button"
             data-test="logout-button"
         >

@@ -16,4 +16,19 @@ class NumberHelper
 
         return $words[(int)$note] ?? '';
     }
+    /**
+     * Convierte un número arábigo a romano (del 1 al 10)
+     */
+    public function toRoman($number)
+    {
+        $map = [
+            1 => 'I', 2 => 'II', 3 => 'III', 4 => 'IV', 5 => 'V',
+            6 => 'VI', 7 => 'VII', 8 => 'VIII', 9 => 'IX', 10 => 'X'
+        ];
+
+        // Convertimos a entero por si llega como string "1"
+        $n = (int)$number;
+
+        return $map[$n] ?? $number;
+    }
 }

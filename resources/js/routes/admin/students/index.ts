@@ -176,7 +176,7 @@ show.head = (args: { id: string | number } | [id: string | number ] | string | n
     show.form = showForm
 /**
 * @see \App\Http\Controllers\ReportController::certificate
- * @see app/Http/Controllers/ReportController.php:22
+ * @see app/Http/Controllers/ReportController.php:133
  * @route '/admin/estudiantes/{personId}/certificado'
  */
 export const certificate = (args: { personId: string | number } | [personId: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -191,7 +191,7 @@ certificate.definition = {
 
 /**
 * @see \App\Http\Controllers\ReportController::certificate
- * @see app/Http/Controllers/ReportController.php:22
+ * @see app/Http/Controllers/ReportController.php:133
  * @route '/admin/estudiantes/{personId}/certificado'
  */
 certificate.url = (args: { personId: string | number } | [personId: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -219,7 +219,7 @@ certificate.url = (args: { personId: string | number } | [personId: string | num
 
 /**
 * @see \App\Http\Controllers\ReportController::certificate
- * @see app/Http/Controllers/ReportController.php:22
+ * @see app/Http/Controllers/ReportController.php:133
  * @route '/admin/estudiantes/{personId}/certificado'
  */
 certificate.get = (args: { personId: string | number } | [personId: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -228,7 +228,7 @@ certificate.get = (args: { personId: string | number } | [personId: string | num
 })
 /**
 * @see \App\Http\Controllers\ReportController::certificate
- * @see app/Http/Controllers/ReportController.php:22
+ * @see app/Http/Controllers/ReportController.php:133
  * @route '/admin/estudiantes/{personId}/certificado'
  */
 certificate.head = (args: { personId: string | number } | [personId: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -238,7 +238,7 @@ certificate.head = (args: { personId: string | number } | [personId: string | nu
 
     /**
 * @see \App\Http\Controllers\ReportController::certificate
- * @see app/Http/Controllers/ReportController.php:22
+ * @see app/Http/Controllers/ReportController.php:133
  * @route '/admin/estudiantes/{personId}/certificado'
  */
     const certificateForm = (args: { personId: string | number } | [personId: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -248,7 +248,7 @@ certificate.head = (args: { personId: string | number } | [personId: string | nu
 
             /**
 * @see \App\Http\Controllers\ReportController::certificate
- * @see app/Http/Controllers/ReportController.php:22
+ * @see app/Http/Controllers/ReportController.php:133
  * @route '/admin/estudiantes/{personId}/certificado'
  */
         certificateForm.get = (args: { personId: string | number } | [personId: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -257,7 +257,7 @@ certificate.head = (args: { personId: string | number } | [personId: string | nu
         })
             /**
 * @see \App\Http\Controllers\ReportController::certificate
- * @see app/Http/Controllers/ReportController.php:22
+ * @see app/Http/Controllers/ReportController.php:133
  * @route '/admin/estudiantes/{personId}/certificado'
  */
         certificateForm.head = (args: { personId: string | number } | [personId: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({

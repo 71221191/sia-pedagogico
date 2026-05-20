@@ -81,7 +81,7 @@
             <td class="bg-gray text-center" style="width: 10%;">Dirección</td>
             <td class="bg-gray">UGEL</td>
             <td>CAJAMARCA</td>
-        </tr>
+        </tr> 
 
         <tr>
             <td class="text-center font-bold" style="font-size: 11px; letter-spacing: 3px;">

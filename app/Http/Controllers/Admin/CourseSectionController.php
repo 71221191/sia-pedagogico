@@ -21,27 +21,23 @@ class CourseSectionController extends Controller
     /**
      * Muestra la lista de secciones de cursos.
      */
-    public function index()
+    public function index(Request $request)
     {
-        Log::info('[CourseSectionController@index] Cargando lista de secciones de cursos.');
+        // 1. Traemos TODOS los cursos (sin paginate) para que las tarjetas se armen completas
+        $courseSections = CourseSection::with(['course.studyPlan.studyProgram', 'academicPeriod', 'teacher'])
+                                ->orderBy('academic_period_id', 'desc')
+                                ->get();
 
-        $courseSections = CourseSection::with('course.studyPlan.studyProgram', 'academicPeriod', 'teacher')
-                                    ->orderBy('academic_period_id', 'desc')
-                                    ->orderBy('course_id')
-                                    ->orderBy('name')
-                                    ->paginate(10);
-
-        // --- AGREGAMOS ESTO PARA LOS FILTROS ---
-        $academicPeriods = \App\Models\AcademicPeriod::orderBy('start_date', 'desc')->get();
-        $studyPlans = \App\Models\StudyPlan::with('studyProgram')->get();
-
+        // 2. Lo mandamos como 'courseSections' pero dentro de un array 'data'
+        // para que el Index.vue no explote al buscar .data
         return Inertia::render('Admin/CourseSections/Index', [
-            'courseSections'  => $courseSections,
-            'academicPeriods' => $academicPeriods, // Enviamos la lista
-            'studyPlans'      => $studyPlans,      // Enviamos la lista
+            'courseSections'  => [
+                'data' => $courseSections
+            ],
+            'academicPeriods' => \App\Models\AcademicPeriod::orderBy('start_date', 'desc')->get(),
+            'studyPlans'      => \App\Models\StudyPlan::with('studyProgram')->get(),
         ]);
     }
-
     /**
      * Muestra el formulario para crear una nueva sección de curso.
      */
@@ -188,8 +184,10 @@ class CourseSectionController extends Controller
     public function update(Request $request, CourseSection $courseSection)
     {
         Log::info('[CourseSectionController@update] Intentando actualizar sección de curso ID: ' . $courseSection->id);
+
         $validated = $request->validate([
             'course_id' => 'required|exists:courses,id',
+
             'academic_period_id' => 'required|exists:academic_periods,id',
             'name' => [
                 'required',
@@ -209,10 +207,11 @@ class CourseSectionController extends Controller
         ]);
 
         $courseSection->update($validated);
-        Log::info('[CourseSectionController@update] Sección de curso ID: ' . $courseSection->id . ' actualizada con éxito.');
+        \App\Models\Schedule::where('course_section_id', $courseSection->id)
+            ->update(['teacher_id' => $validated['teacher_id']]);
 
         return redirect()->route('admin.course_sections.index')
-                         ->with('success', 'Sección de curso actualizada exitosamente.');
+                        ->with('success', 'Sección y horario actualizados correctamente.');
     }
 
     /**
@@ -230,7 +229,8 @@ class CourseSectionController extends Controller
     }
 
     // Inyectamos el servicio en el constructor si no lo tenías
-    protected $sectionService;
+    protected \App\Services\SectionService $sectionService;
+
 
     public function __construct(SectionService $sectionService)
     {
@@ -255,24 +255,29 @@ class CourseSectionController extends Controller
      */
     public function bulkStore(Request $request)
     {
+        // 1. Validamos los nuevos campos que vienen de la vista
         $request->validate([
             'academic_period_id' => 'required|exists:academic_periods,id',
-            'study_plan_id' => 'required|exists:study_plans,id',
-            'cycles' => 'required|array|min:1',
+            'study_plan_id'      => 'required|exists:study_plans,id',
+            'cycles'             => 'required|array|min:1',
+            'section_labels'     => 'required|array|min:1', // Para las letras A, B...
+            'shift_id'           => 'required|exists:shifts,id', // Para Mañana/Tarde
         ]);
 
+        // 2. Llamamos al servicio pasando los 5 parámetros
         $count = $this->sectionService->generateBulkSections(
             $request->academic_period_id,
             $request->study_plan_id,
-            $request->cycles
+            $request->cycles,
+            $request->section_labels,
+            $request->shift_id
         );
 
-        // --- LA CONEXIÓN MÁGICA ---
-        // Redirigimos a la sábana de asignación con los mismos datos que acabamos de usar
+        // 3. Redirigimos a la asignación de docentes con los filtros puestos
         return redirect()->route('admin.course_sections.teacher-assignment', [
             'academic_period_id' => $request->academic_period_id,
-            'study_plan_id' => $request->study_plan_id
-        ])->with('success', "Se generaron {$count} secciones. Ahora asigne a los docentes.");
+            'study_plan_id'      => $request->study_plan_id
+        ])->with('success', "Se generaron {$count} secciones exitosamente para el turno seleccionado.");
     }
 
     /**

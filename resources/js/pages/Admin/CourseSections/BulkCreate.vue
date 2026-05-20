@@ -21,7 +21,9 @@ const props = defineProps({
 const form = useForm({
     academic_period_id: '',
     study_plan_id: '',
-    cycles: [], // Aquí se guardarán los ciclos marcados (ej: ['I', 'III'])
+    cycles: [], // Los ciclos que marcas (I, II, etc.)
+    section_labels: ['A'], // Por defecto creamos la A
+    shift_id: '', // <--- NUEVO: Aquí guardaremos el turno elegido
 });
 
 // Función para marcar/desmarcar ciclos rápidamente
@@ -40,6 +42,7 @@ const submit = () => {
         },
     });
 };
+
 
 // Helpers para seleccionar grupos
 const selectAll = () => form.cycles = [...props.availableCycles];
@@ -60,7 +63,6 @@ const selectNone = () => form.cycles = [];
                     <Zap class="mr-3 w-8 h-8 text-yellow-500" />
                     Asistente de Apertura de Semestre
                 </h1>
-                <p class="text-gray-500 mt-2 italic">Crea automáticamente las secciones "A" para todos los cursos de los ciclos seleccionados.</p>
             </div>
 
             <form @submit.prevent="submit" class="space-y-6">
@@ -116,6 +118,51 @@ const selectNone = () => form.cycles = [];
                     <div v-if="form.errors.cycles" class="text-red-500 text-xs mt-4 font-bold text-center">{{ form.errors.cycles }}</div>
                 </div>
 
+                <!-- 4. TURNO Y SECCIONES -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8 pt-8 border-t border-gray-100">
+
+                    <!-- Selección de Turno -->
+                    <div>
+                        <h3 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">4. Seleccione el Turno</h3>
+                        <div class="flex gap-4">
+                            <button
+                                type="button"
+                                @click="form.shift_id = 1"
+                                :class="form.shift_id === 1 ? 'border-yellow-500 bg-yellow-50 text-yellow-700' : 'border-gray-200 text-gray-400'"
+                                class="flex-1 p-4 border-2 rounded-2xl transition-all flex flex-col items-center gap-2 group"
+                            >
+                                <Sun :class="form.shift_id === 1 ? 'text-yellow-500' : 'text-gray-300'" class="w-6 h-6 group-hover:rotate-12 transition-transform" />
+                                <span class="text-xs font-black uppercase">Mañana</span>
+                            </button>
+
+                            <button
+                                type="button"
+                                @click="form.shift_id = 2"
+                                :class="form.shift_id === 2 ? 'border-indigo-500 bg-indigo-50 text-indigo-700' : 'border-gray-200 text-gray-400'"
+                                class="flex-1 p-4 border-2 rounded-2xl transition-all flex flex-col items-center gap-2 group"
+                            >
+                                <Moon :class="form.shift_id === 2 ? 'text-indigo-500' : 'text-gray-300'" class="w-6 h-6 group-hover:-rotate-12 transition-transform" />
+                                <span class="text-xs font-black uppercase">Tarde</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Selección de Letras de Sección -->
+                    <div>
+                        <h3 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">5. Secciones a crear</h3>
+                        <div class="flex flex-wrap gap-3">
+                            <label v-for="letter in ['A', 'B', 'C', 'D']" :key="letter"
+                                class="cursor-pointer">
+                                <input type="checkbox" :value="letter" v-model="form.section_labels" class="hidden peer">
+                                <div class="w-12 h-12 flex items-center justify-center border-2 border-gray-200 rounded-xl peer-checked:border-indigo-600 peer-checked:bg-indigo-600 peer-checked:text-white font-black transition-all">
+                                    {{ letter }}
+                                </div>
+                            </label>
+                        </div>
+                        <p class="text-[9px] text-gray-400 mt-3 italic">* Se creará una tarjeta por cada letra en el turno seleccionado.</p>
+                    </div>
+                </div>
+
                 <!-- Botón de Acción -->
                 <div class="flex flex-col items-center">
                     <button :disabled="form.processing || form.cycles.length === 0"
@@ -126,7 +173,7 @@ const selectNone = () => form.cycles = [];
                         </span>
                     </button>
                     <p class="mt-4 text-[10px] text-gray-400 text-center max-w-xs italic">
-                        * Se creará la sección "A" con 30 vacantes para cada curso de los ciclos seleccionados que no exista ya en el periodo.
+                        * Se creará las secciones seleccionadas con 30 vacantes para cada curso de los ciclos seleccionados que no exista ya en el periodo.
                     </p>
                 </div>
             </form>

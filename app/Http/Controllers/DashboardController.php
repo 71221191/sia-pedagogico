@@ -30,6 +30,9 @@ class DashboardController extends Controller
         if ($user->hasRole('estudiante') && $person) {
             $data['studentProfile'] = $this->profileService->getStudentDashboardData($person);
         }
+        elseif ($user->hasRole('docente') && $person) {
+            $data['teacherProfile'] = $this->profileService->getTeacherDashboardData($person);
+        }
 
         return Inertia::render('Dashboard', $data);
     }

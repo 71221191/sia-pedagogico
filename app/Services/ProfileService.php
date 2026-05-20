@@ -65,8 +65,9 @@ class ProfileService
 
             'academic' => [
                 'program' => $enrollment->studyPlan->studyProgram->name ?? 'Carrera no asignada',
-                'cycle' => $enrollment->cycle ?? 'N/A',
-                'scholarship' => $ficha->scholarship_name ?? 'NINGUNA',
+                'cycle'   => $enrollment->cycle ?? 'N/A',
+                // Ahora es sincero: Si el ID es 15, es NINGUNA. Cualquier otro ID se muestra real.
+                'scholarship'     => ($ficha && $ficha->scholarship_type_id != 15) ? $ficha->scholarship_name : 'NINGUNA',
                 'has_scholarship' => ($ficha && $ficha->scholarship_type_id != 15),
             ],
 
@@ -102,6 +103,50 @@ class ProfileService
                 'average' => number_format($ranking->weighted_average, 2)
             ] : null,
 
+            'photo' => $person->official_photo_path ? asset('storage/' . $person->official_photo_path) : null
+        ];
+    }
+
+    public function getTeacherDashboardData(Person $person)
+    {
+        $period = AcademicPeriod::where('status', 'open')->first();
+
+        // 1. Calcular Carga Horaria Semanal (Sumamos bloques de 45 min del horario)
+        // Cada registro en 'schedules' es un bloque asignado
+        $totalBlocks = \App\Models\Schedule::where('teacher_id', $person->id)
+            ->where('academic_period_id', $period->id ?? 0)
+            ->count();
+
+        $weeklyHours = round(($totalBlocks * 45) / 60, 1);
+
+        // 2. Conteo de Secciones y Alumnos totales
+        $sections = \App\Models\CourseSection::where('teacher_id', $person->id)
+            ->where('academic_period_id', $period->id ?? 0)
+            ->withCount('enrollmentDetails')
+            ->get();
+
+        $totalStudents = $sections->sum('enrollment_details_count');
+
+        // 3. Documentos Pendientes (Syllabus por subir o aprobados)
+        $portfolioStats = [
+            'total' => $sections->count(),
+            'approved' => \App\Models\TeacherPortfolio::whereIn('course_section_id', $sections->pluck('id'))
+                            ->where('type', 'syllabus')
+                            ->where('status', 'approved')
+                            ->count()
+        ];
+
+        return [
+            'full_name' => $person->full_name,
+            'condition' => $person->employment_condition ?? 'No especificado',
+            'degree'    => $person->academic_degree ?? 'Licenciado',
+            'category'  => $person->professional_category ?? 'Docente',
+            'stats' => [
+                'weekly_hours'   => $weeklyHours,
+                'total_sections' => $sections->count(),
+                'total_students' => $totalStudents,
+                'portfolio_ok'   => ($portfolioStats['total'] > 0 && $portfolioStats['total'] == $portfolioStats['approved'])
+            ],
             'photo' => $person->official_photo_path ? asset('storage/' . $person->official_photo_path) : null
         ];
     }

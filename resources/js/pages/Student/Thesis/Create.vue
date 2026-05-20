@@ -53,12 +53,15 @@ const submit = () => {
                         <Users class="w-4 h-4 text-gray-400 mr-2" />
                         <label class="text-xs font-bold text-gray-700 uppercase">¿Trabajo en Pareja? (Opcional)</label>
                     </div>
+
                     <select v-model="form.partner_id" class="w-full border-gray-100 bg-gray-50 rounded-2xl text-xs">
                         <option :value="null">Proyecto Individual</option>
+                        <!-- Usamos 's.label' que ya viene ordenado desde el controlador -->
                         <option v-for="s in students" :key="s.id" :value="s.id">
-                            {{ s.last_name_p }} {{ s.names }}
+                            {{ s.label }}
                         </option>
                     </select>
+
                     <p class="mt-2 text-[10px] text-gray-400 italic leading-tight">
                         * Si selecciona un compañero, el proyecto aparecerá automáticamente en el portal de ambos.
                     </p>

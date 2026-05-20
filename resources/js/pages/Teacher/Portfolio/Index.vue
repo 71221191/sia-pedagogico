@@ -1,6 +1,6 @@
 <script setup>
 import { useForm, Head, Link } from '@inertiajs/vue3';
-import { FileText, Upload, Trash2, CheckCircle, Clock, AlertCircle, ArrowLeft } from 'lucide-vue-next';
+import { FileText, Upload, Trash2, CheckCircle, Clock, AlertCircle, ArrowLeft, Eye } from 'lucide-vue-next';
 
 const props = defineProps({
     section: Object,
@@ -45,7 +45,7 @@ const getStatusStyle = (status) => {
                     <h2 class="font-black text-gray-800 mb-6 text-xs uppercase tracking-widest flex items-center">
                         <Upload class="mr-2 w-4 h-4 text-blue-600" /> Cargar Documento
                     </h2>
-                    
+
                     <form @submit.prevent="submit" class="space-y-4">
                         <div>
                             <label class="block text-[10px] font-black text-gray-400 uppercase mb-1">Tipo de Archivo</label>
@@ -72,41 +72,52 @@ const getStatusStyle = (status) => {
             </div>
 
             <!-- Listado de Archivos -->
-            <div class="lg:col-span-2 space-y-4">
-                <div v-for="file in files" :key="file.id" 
-                     class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between hover:shadow-md transition">
-                    <div class="flex items-center space-x-4">
-                        <div class="bg-red-50 p-3 rounded-xl text-red-500">
-                            <FileText class="w-6 h-6" />
-                        </div>
-                        <div>
-                            <h3 class="font-bold text-gray-900 text-sm uppercase leading-none">{{ file.name }}</h3>
-                            <span class="text-[9px] font-black text-gray-400 uppercase tracking-tighter">{{ file.type }}</span>
-                        </div>
+            <div v-for="file in files" :key="file.id"
+                class="bg-white rounded-[2rem] border border-gray-100 shadow-sm p-5 flex flex-col md:flex-row items-center justify-between hover:shadow-md transition-all group">
+
+                <div class="flex items-center space-x-4 w-full md:w-auto">
+                    <!-- Icono según tipo -->
+                    <div :class="file.type === 'syllabus' ? 'bg-indigo-50 text-indigo-600' : 'bg-emerald-50 text-emerald-600'" class="p-4 rounded-2xl">
+                        <FileText class="w-6 h-6" />
                     </div>
-
-                    <div class="flex items-center space-x-4">
-                        <!-- Badge de Estado -->
-                        <span :class="getStatusStyle(file.status)" class="px-3 py-1 rounded-full text-[9px] font-black uppercase border">
-                            {{ file.status }}
-                        </span>
-
-                        <!-- Acciones -->
-                        <div class="flex space-x-2">
-                            <a :href="'/storage/' + file.file_path" target="_blank" class="p-2 bg-gray-100 text-gray-600 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition">
-                                <Clock class="w-4 h-4" v-if="file.status === 'pending'" />
-                                <CheckCircle class="w-4 h-4" v-else />
-                            </a>
-                            <button v-if="file.status !== 'approved'" @click="$inertia.delete(route('teacher.portfolio.destroy', file.id))" 
-                                    class="p-2 bg-gray-100 text-gray-400 rounded-lg hover:bg-red-50 hover:text-red-600 transition">
-                                <Trash2 class="w-4 h-4" />
-                            </button>
+                    <div>
+                        <h3 class="font-black text-gray-900 text-sm uppercase leading-tight">{{ file.name }}</h3>
+                        <div class="flex items-center gap-2 mt-1">
+                            <span class="text-[9px] font-black text-gray-400 uppercase tracking-widest">{{ file.type }}</span>
+                            <span class="text-[9px] text-gray-300">•</span>
+                            <span class="text-[9px] text-gray-400 font-bold uppercase italic">Subido el {{ new Date(file.created_at).toLocaleDateString() }}</span>
                         </div>
                     </div>
                 </div>
 
-                <div v-if="files.length === 0" class="p-20 text-center text-gray-400 italic">
-                    No has subido ningún documento al portafolio de esta sección.
+                <div class="flex items-center gap-4 mt-4 md:mt-0 w-full md:w-auto justify-between md:justify-end">
+                    <!-- Badge de Estado con Tooltip de Feedback -->
+                    <div class="relative group/status">
+                        <span :class="getStatusStyle(file.status)" class="px-4 py-1.5 rounded-full text-[9px] font-black uppercase border-2 flex items-center gap-1">
+                            <CheckCircle v-if="file.status === 'approved'" class="w-3 h-3" />
+                            <AlertCircle v-if="file.status === 'observed'" class="w-3 h-3" />
+                            <Clock v-if="file.status === 'pending'" class="w-3 h-3" />
+                            {{ file.status }}
+                        </span>
+
+                        <!-- Si hay feedback del Jefe de Área, lo mostramos aquí -->
+                        <div v-if="file.feedback" class="absolute bottom-full mb-2 right-0 w-48 p-3 bg-gray-900 text-white text-[9px] rounded-2xl shadow-xl opacity-0 group-hover/status:opacity-100 transition-opacity z-50 pointer-events-none">
+                            <p class="font-black uppercase text-amber-400 mb-1">Nota del Revisor:</p>
+                            {{ file.feedback }}
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <a :href="'/storage/' + file.file_path" target="_blank"
+                        class="p-2.5 bg-gray-900 text-white rounded-xl hover:bg-blue-600 transition-all shadow-lg shadow-gray-100">
+                            <Eye class="w-4 h-4" />
+                        </a>
+                        <button v-if="file.status !== 'approved'"
+                                @click="$inertia.delete(route('teacher.portfolio.destroy', file.id))"
+                                class="p-2.5 bg-white border-2 border-gray-100 text-gray-400 rounded-xl hover:text-red-600 hover:border-red-100 transition-all">
+                            <Trash2 class="w-4 h-4" />
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

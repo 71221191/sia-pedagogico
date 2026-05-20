@@ -34,6 +34,12 @@ const processFile = (status) => {
         onSuccess: () => isModalOpen.value = false
     });
 };
+// Agrega o reemplaza esta función en tu script
+const getStatusClasses = (status) => {
+    if (status === 'approved') return 'bg-emerald-50 text-emerald-700 border-emerald-100';
+    if (status === 'observed') return 'bg-rose-50 text-rose-700 border-rose-100';
+    return 'bg-amber-50 text-amber-700 border-amber-100';
+};
 
 const changeTab = (status) => {
     router.get(route('head_of_area.portfolio.index'), { status });
@@ -69,19 +75,27 @@ const changeTab = (status) => {
                     </thead>
                     <tbody class="divide-y divide-gray-50">
                         <tr v-for="file in files.data" :key="file.id" class="hover:bg-indigo-50/30 transition">
-                            <td class="p-4">
-                                <div class="font-black text-gray-900 uppercase text-xs">{{ file.section.teacher.names }} {{ file.section.teacher.last_name_p }}</div>
-                                <div class="text-[10px] text-indigo-600 font-bold uppercase">{{ file.section.course.name }} ({{ file.section.name }})</div>
+                            <td class="p-5">
+                                <!-- Usamos encadenamiento opcional ?. para que no explote si falta el dato -->
+                                <div class="font-black text-gray-900 uppercase text-[11px] leading-tight">
+                                    {{ file.section?.teacher?.full_name || 'Docente no asignado' }}
+                                </div>
+                                <div class="text-[9px] text-indigo-600 font-bold uppercase mt-1 tracking-wider">
+                                    {{ file.section?.course?.name }} — SECC {{ file.section?.name }}
+                                </div>
                             </td>
-                            <td class="p-4">
-                                <span class="bg-gray-100 px-2 py-1 rounded text-[10px] font-black uppercase text-gray-500 italic">{{ file.type }}</span>
+                            <td class="p-5">
+                                <span class="px-3 py-1 rounded-full text-[9px] font-black uppercase border" :class="getStatusClasses(file.status)">
+                                    {{ file.type }}
+                                </span>
                             </td>
-                            <td class="p-4 text-xs text-gray-400 font-mono">
-                                {{ new Date(file.created_at).toLocaleString() }}
+                            <td class="p-5 text-[10px] text-gray-400 font-bold uppercase">
+                                {{ new Date(file.created_at).toLocaleDateString() }}
                             </td>
-                            <td class="p-4 text-center">
-                                <button @click="openModal(file)" class="bg-indigo-600 text-white px-4 py-2 rounded-lg font-bold text-[10px] uppercase hover:bg-indigo-700 transition">
-                                    REVISAR PDF
+                            <td class="p-5 text-center">
+                                <button @click="openModal(file)"
+                                        class="bg-gray-900 text-white px-5 py-2.5 rounded-xl font-black text-[9px] uppercase tracking-widest hover:bg-indigo-600 transition-all shadow-lg shadow-gray-200">
+                                    AUDITAR DOCUMENTO
                                 </button>
                             </td>
                         </tr>
@@ -101,27 +115,30 @@ const changeTab = (status) => {
                     <button @click="isModalOpen = false" class="text-gray-400 hover:text-red-500 text-2xl font-black">×</button>
                 </div>
 
-                <div class="flex-1 bg-gray-200 p-4">
-                    <iframe :src="'/storage/' + selectedFile.file_path" class="w-full h-full rounded-xl shadow-lg border-none" style="min-height: 500px;"></iframe>
+                <div class="flex-1 bg-slate-100 p-4 sm:p-8 overflow-y-auto">
+                    <!-- Contenedor con aspecto de papel -->
+                    <div class="max-w-4xl mx-auto bg-white shadow-2xl rounded-sm overflow-hidden" style="min-height: 800px;">
+                        <iframe
+                            :src="'/storage/' + selectedFile.file_path"
+                            class="w-full h-full border-none"
+                            style="min-height: 800px;"
+                        ></iframe>
+                    </div>
                 </div>
 
-                <div class="p-6 border-t space-y-4">
-                    <div v-if="showFeedbackField" class="animate-in fade-in slide-in-from-bottom-2">
-                        <label class="block text-xs font-black text-red-600 uppercase mb-2 italic">Describa las observaciones para el docente:</label>
-                        <textarea v-model="form.feedback" class="w-full border-2 border-red-100 rounded-2xl p-4 focus:ring-0 focus:border-red-400" rows="3"></textarea>
+                <div class="p-8 bg-gray-50 border-t flex flex-col md:flex-row justify-between items-center gap-4">
+                    <div class="flex items-center gap-3">
+                        <button @click="processFile('observed')"
+                                class="px-8 py-3 bg-white border-2 border-rose-200 text-rose-600 rounded-2xl font-black text-xs uppercase hover:bg-rose-50 transition-all">
+                            {{ showFeedbackField ? 'CONFIRMAR Y NOTIFICAR' : 'OBSERVAR / RECHAZAR' }}
+                        </button>
+                        <button v-if="showFeedbackField" @click="showFeedbackField = false" class="text-gray-400 font-bold text-xs uppercase tracking-widest">Cancelar</button>
                     </div>
 
-                    <div class="flex justify-between items-center">
-                        <div class="space-x-2">
-                            <button @click="processFile('observed')" class="bg-red-50 text-red-700 px-6 py-3 rounded-xl font-bold text-xs uppercase hover:bg-red-100 transition">
-                                {{ showFeedbackField ? 'CONFIRMAR OBSERVACIÓN' : 'OBSERVAR DOCUMENTO' }}
-                            </button>
-                            <button v-if="showFeedbackField" @click="showFeedbackField = false" class="text-gray-400 font-bold text-xs">Cancelar</button>
-                        </div>
-                        <button @click="processFile('approved')" class="bg-green-600 text-white px-10 py-3 rounded-xl font-black text-xs uppercase shadow-lg shadow-green-100 hover:bg-green-700 transition">
-                            APROBAR SÍLABO / DOCUMENTO
-                        </button>
-                    </div>
+                    <button @click="processFile('approved')"
+                            class="px-12 py-4 bg-emerald-600 text-white rounded-2xl font-black text-xs uppercase shadow-xl shadow-emerald-100 hover:bg-emerald-700 transition-all transform hover:scale-105">
+                        APROBAR PARA REGISTRO DE NOTAS
+                    </button>
                 </div>
             </div>
         </div>

@@ -79,7 +79,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     index.form = indexForm
 /**
 * @see \App\Http\Controllers\Student\ThesisController::create
- * @see app/Http/Controllers/Student/ThesisController.php:35
+ * @see app/Http/Controllers/Student/ThesisController.php:37
  * @route '/estudiante/tesis/registrar'
  */
 export const create = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -94,7 +94,7 @@ create.definition = {
 
 /**
 * @see \App\Http\Controllers\Student\ThesisController::create
- * @see app/Http/Controllers/Student/ThesisController.php:35
+ * @see app/Http/Controllers/Student/ThesisController.php:37
  * @route '/estudiante/tesis/registrar'
  */
 create.url = (options?: RouteQueryOptions) => {
@@ -103,7 +103,7 @@ create.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Student\ThesisController::create
- * @see app/Http/Controllers/Student/ThesisController.php:35
+ * @see app/Http/Controllers/Student/ThesisController.php:37
  * @route '/estudiante/tesis/registrar'
  */
 create.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -112,7 +112,7 @@ create.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 /**
 * @see \App\Http\Controllers\Student\ThesisController::create
- * @see app/Http/Controllers/Student/ThesisController.php:35
+ * @see app/Http/Controllers/Student/ThesisController.php:37
  * @route '/estudiante/tesis/registrar'
  */
 create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -122,7 +122,7 @@ create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
     /**
 * @see \App\Http\Controllers\Student\ThesisController::create
- * @see app/Http/Controllers/Student/ThesisController.php:35
+ * @see app/Http/Controllers/Student/ThesisController.php:37
  * @route '/estudiante/tesis/registrar'
  */
     const createForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -132,7 +132,7 @@ create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
             /**
 * @see \App\Http\Controllers\Student\ThesisController::create
- * @see app/Http/Controllers/Student/ThesisController.php:35
+ * @see app/Http/Controllers/Student/ThesisController.php:37
  * @route '/estudiante/tesis/registrar'
  */
         createForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -141,7 +141,7 @@ create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
         })
             /**
 * @see \App\Http\Controllers\Student\ThesisController::create
- * @see app/Http/Controllers/Student/ThesisController.php:35
+ * @see app/Http/Controllers/Student/ThesisController.php:37
  * @route '/estudiante/tesis/registrar'
  */
         createForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -157,7 +157,7 @@ create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     create.form = createForm
 /**
 * @see \App\Http\Controllers\Student\ThesisController::store
- * @see app/Http/Controllers/Student/ThesisController.php:48
+ * @see app/Http/Controllers/Student/ThesisController.php:79
  * @route '/estudiante/tesis/registrar'
  */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -172,7 +172,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\Student\ThesisController::store
- * @see app/Http/Controllers/Student/ThesisController.php:48
+ * @see app/Http/Controllers/Student/ThesisController.php:79
  * @route '/estudiante/tesis/registrar'
  */
 store.url = (options?: RouteQueryOptions) => {
@@ -181,7 +181,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Student\ThesisController::store
- * @see app/Http/Controllers/Student/ThesisController.php:48
+ * @see app/Http/Controllers/Student/ThesisController.php:79
  * @route '/estudiante/tesis/registrar'
  */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -191,7 +191,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
     /**
 * @see \App\Http\Controllers\Student\ThesisController::store
- * @see app/Http/Controllers/Student/ThesisController.php:48
+ * @see app/Http/Controllers/Student/ThesisController.php:79
  * @route '/estudiante/tesis/registrar'
  */
     const storeForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -201,7 +201,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
             /**
 * @see \App\Http\Controllers\Student\ThesisController::store
- * @see app/Http/Controllers/Student/ThesisController.php:48
+ * @see app/Http/Controllers/Student/ThesisController.php:79
  * @route '/estudiante/tesis/registrar'
  */
         storeForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -212,7 +212,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     store.form = storeForm
 /**
 * @see \App\Http\Controllers\Student\ThesisController::uploadDocument
- * @see app/Http/Controllers/Student/ThesisController.php:79
+ * @see app/Http/Controllers/Student/ThesisController.php:110
  * @route '/estudiante/tesis/{project}/documento'
  */
 export const uploadDocument = (args: { project: number | { id: number } } | [project: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -227,7 +227,7 @@ uploadDocument.definition = {
 
 /**
 * @see \App\Http\Controllers\Student\ThesisController::uploadDocument
- * @see app/Http/Controllers/Student/ThesisController.php:79
+ * @see app/Http/Controllers/Student/ThesisController.php:110
  * @route '/estudiante/tesis/{project}/documento'
  */
 uploadDocument.url = (args: { project: number | { id: number } } | [project: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -260,7 +260,7 @@ uploadDocument.url = (args: { project: number | { id: number } } | [project: num
 
 /**
 * @see \App\Http\Controllers\Student\ThesisController::uploadDocument
- * @see app/Http/Controllers/Student/ThesisController.php:79
+ * @see app/Http/Controllers/Student/ThesisController.php:110
  * @route '/estudiante/tesis/{project}/documento'
  */
 uploadDocument.post = (args: { project: number | { id: number } } | [project: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -270,7 +270,7 @@ uploadDocument.post = (args: { project: number | { id: number } } | [project: nu
 
     /**
 * @see \App\Http\Controllers\Student\ThesisController::uploadDocument
- * @see app/Http/Controllers/Student/ThesisController.php:79
+ * @see app/Http/Controllers/Student/ThesisController.php:110
  * @route '/estudiante/tesis/{project}/documento'
  */
     const uploadDocumentForm = (args: { project: number | { id: number } } | [project: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -280,7 +280,7 @@ uploadDocument.post = (args: { project: number | { id: number } } | [project: nu
 
             /**
 * @see \App\Http\Controllers\Student\ThesisController::uploadDocument
- * @see app/Http/Controllers/Student/ThesisController.php:79
+ * @see app/Http/Controllers/Student/ThesisController.php:110
  * @route '/estudiante/tesis/{project}/documento'
  */
         uploadDocumentForm.post = (args: { project: number | { id: number } } | [project: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

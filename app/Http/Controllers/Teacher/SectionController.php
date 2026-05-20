@@ -22,7 +22,7 @@ class SectionController extends Controller
     {
         $this->attendanceService = $attendanceService;
     }
-    
+
     /**
      * Listado de cursos asignados al docente
      */
@@ -35,7 +35,9 @@ class SectionController extends Controller
             abort(404, "Este usuario no tiene un perfil de docente asignado.");
         }
 
-        $sections = CourseSection::with(['course'])
+        // Traemos las secciones con el curso, el programa (para el color) y contamos los alumnos
+        $sections = CourseSection::with(['course.studyPlan.studyProgram', 'academicPeriod'])
+            ->withCount('enrollmentDetails') // Esto nos da 'enrollment_details_count'
             ->where('teacher_id', $teacher->id)
             ->whereHas('academicPeriod', function($q) {
                 $q->where('status', 'open');
@@ -128,9 +130,9 @@ class SectionController extends Controller
         $selectedIds = $section->course->competencies->pluck('id')->toArray();
 
         return Inertia::render('Teacher/Sections/Configure', [
-            'section' => $section->load('course'),
-            'catalog' => $catalog,
-            'selectedIds' => $selectedIds
+            'section' => $section->load(['course.studyPlan', 'course.competencies']), // <--- LOAD MEJORADO
+            'catalog' => \App\Models\Domain::with('competencies')->get(), // <--- MEJOR: Traer dominios con sus hijos
+            'selectedIds' => $section->course->competencies->pluck('id')->toArray()
         ]);
     }
 
@@ -141,12 +143,25 @@ class SectionController extends Controller
             'competencies.*' => 'exists:competencies,id'
         ]);
 
-        // Sincronizamos en la tabla pivote course_competency
-        // El método sync() borra lo anterior y pone lo nuevo (limpio y seguro)
+        // --- BLOQUE DE SEGURIDAD NUEVO ---
+        // 1. Buscamos qué competencias tenía antes y ya no están en la nueva lista
+        $currentIds = $section->course->competencies->pluck('id')->toArray();
+        $removedIds = array_diff($currentIds, $request->competencies);
+
+        // 2. Verificamos si alguna de las que va a quitar ya tiene notas registradas
+        $hasGrades = \App\Models\Grade::whereIn('competency_id', $removedIds)
+            ->whereIn('enrollment_detail_id', $section->enrollmentDetails->pluck('id'))
+            ->exists();
+
+        if ($hasGrades) {
+            return back()->with('error', 'No puedes quitar una competencia que ya tiene notas registradas. Primero borra las notas en la sábana.');
+        }
+        // ---------------------------------
+
         $section->course->competencies()->sync($request->competencies);
 
         return redirect()->route('teacher.sections.show', $section->id)
-            ->with('success', 'Competencias configuradas. Ya puedes registrar notas.');
+            ->with('success', 'Mapa Curricular actualizado correctamente.');
     }
 
     public function pdf(CourseSection $section)

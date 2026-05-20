@@ -2,7 +2,7 @@
 import { useForm, Head, Link } from '@inertiajs/vue3';
 import {
     Plus, FileText, User, Users, Upload, CheckCircle, Eye,
-    ArrowRight, BookOpen, ShieldCheck, GraduationCap, Clock
+    ArrowRight, BookOpen, ShieldCheck, GraduationCap, Clock, Calendar, Lock
 } from 'lucide-vue-next';
 import { computed } from 'vue';
 import AppLayout from '@/layouts/AppLayout.vue'; // Ajusta la ruta a tu layout real
@@ -52,9 +52,22 @@ const submitDocument = () => {
 
         <div class="p-4 md:p-8 max-w-7xl mx-auto bg-gray-50 min-h-screen">
 
-            <!-- ESCENARIO: SIN PROYECTO (Igual al anterior pero con diseño del layout) -->
-            <div v-if="!project" class="...">
-                <!-- (Mantenemos tu bloque de registro aquí) -->
+            <!-- ESCENARIO A: EL ALUMNO NO TIENE PROYECTO AÚN -->
+            <div v-if="!project" class="flex flex-col items-center justify-center min-h-[60vh] text-center">
+                <div class="bg-white p-12 rounded-[3rem] shadow-xl border border-gray-100 max-w-xl">
+                    <div class="w-20 h-20 bg-indigo-50 text-indigo-600 rounded-3xl flex items-center justify-center mx-auto mb-6">
+                        <GraduationCap class="w-10 h-10" />
+                    </div>
+                    <h1 class="text-3xl font-black text-gray-900 uppercase tracking-tighter mb-4">Inicia tu camino al Título</h1>
+                    <p class="text-gray-500 text-sm leading-relaxed mb-8">
+                        Aún no tienes un proyecto de investigación registrado. Para comenzar tu proceso de titulación, debes registrar el título y la línea de investigación de tu tesis.
+                    </p>
+                    <Link :href="route('student.thesis.create')"
+                          class="inline-flex items-center px-8 py-4 bg-gray-900 text-white rounded-2xl font-black uppercase text-xs tracking-widest hover:bg-indigo-600 transition-all shadow-2xl shadow-gray-200 transform hover:scale-105 active:scale-95">
+                        <Plus class="w-4 h-4 mr-2" />
+                        Registrar mi Proyecto Ahora
+                    </Link>
+                </div>
             </div>
 
             <!-- ESCENARIO: PROYECTO ACTIVO -->

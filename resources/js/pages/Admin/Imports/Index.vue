@@ -1,15 +1,24 @@
 <script setup>
-import { useForm, Head } from '@inertiajs/vue3';
+import { useForm, Head, Link } from '@inertiajs/vue3';
+
 import { ref } from 'vue';
-import { Upload, FileSpreadsheet, Users, BookOpen, GraduationCap, DollarSign, AlertCircle, CheckCircle2 } from 'lucide-vue-next';
+import {
+    Upload, FileSpreadsheet, Users, BookOpen,
+    GraduationCap, DollarSign, AlertCircle,
+    CheckCircle2, UserRoundCheck, History
+} from 'lucide-vue-next';
+
 import AppLayout from '@/layouts/AppLayout.vue';
+import { route } from 'ziggy-js';
 
 // Opciones de importación
 const importTypes = [
     { value: 'students', label: 'Alumnos', icon: Users, description: 'Importar datos personales de estudiantes' },
+    { value: 'teachers', label: 'Docentes', icon: UserRoundCheck, description: 'Importar datos y cuentas de docentes' }, // <--- Nueva opción
     { value: 'courses', label: 'Cursos', icon: BookOpen, description: 'Importar catálogo de cursos académicos' },
     { value: 'grades', label: 'Notas', icon: GraduationCap, description: 'Importar calificaciones de estudiantes' },
     { value: 'payments', label: 'Pagos', icon: DollarSign, description: 'Importar pagos históricos' },
+
 ];
 
 const selectedType = ref(null);
@@ -59,6 +68,14 @@ function submit() {
                 Centro de Importación Masiva
             </h1>
 
+            <div class="mb-8">
+                <Link :href="route('admin.imports.history')"
+                    class="inline-flex items-center px-4 py-2 bg-white border-2 border-gray-100 text-gray-600 rounded-xl font-black text-[10px] uppercase hover:border-indigo-200 hover:text-indigo-600 transition-all shadow-sm">
+                    <History class="w-4 h-4 mr-2" />
+                    Ver Historial de Cargas y Errores
+                </Link>
+            </div>
+
             <!-- Mensajes de éxito / error -->
             <div v-if="$page.props.flash?.success" class="mb-6 p-4 bg-green-100 border border-green-300 text-green-800 rounded-xl flex items-center">
                 <CheckCircle2 class="w-5 h-5 mr-2" />
@@ -75,7 +92,7 @@ function submit() {
             </div>
 
             <!-- Selector visual de tipo de importación -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
                 <button
                     v-for="type in importTypes"
                     :key="type.value"

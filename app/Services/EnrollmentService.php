@@ -38,7 +38,7 @@ class EnrollmentService
                     'academic_period_id' => $period->id,
                 ],
                 [
-                    'study_plan_id' => 1, // OJO: Idealmente sacar del alumno ($person->study_plan_id)
+                    'study_plan_id' => $person->study_plan_id, // OJO: Idealmente sacar del alumno ($person->study_plan_id)
                     'cycle' => 'I',
                     'enrollment_type_id' => 1,
                     'shift_id' => 1,
@@ -98,6 +98,12 @@ class EnrollmentService
 
     public function getAvailableSectionsWithStatus(Person $person, AcademicPeriod $period)
     {
+        // 0. Buscamos el Plan de Estudios REAL del alumno desde su matrícula
+        $currentEnrollment = Enrollment::where('person_id', $person->id)
+            ->where('academic_period_id', $period->id)
+            ->first();
+
+        $planId = $currentEnrollment ? $currentEnrollment->study_plan_id : 0;
         // 1. Cursos APROBADOS en el pasado
         $approvedCourseIds = DB::table('enrollment_details')
             ->join('enrollments', 'enrollment_details.enrollment_id', '=', 'enrollments.id')
@@ -116,6 +122,10 @@ class EnrollmentService
 
         $sections = CourseSection::with(['course.prerequisites', 'teacher'])
             ->where('academic_period_id', $period->id)
+            ->whereHas('course', function($q) use ($planId) {
+                // Ahora filtramos por el ID que sacamos de la matrícula, no de la persona
+                $q->where('study_plan_id', $planId);
+            })
             ->get();
 
         return $sections->map(function ($section) use ($approvedCourseIds, $alreadyEnrolledCourseIds) {
@@ -203,5 +213,40 @@ class EnrollmentService
                 'pago' => $pagoOk,
             ]
         ];
+    }
+
+    public function autoEnrollStudentByPayment(Person $person, AcademicPeriod $period)
+    {
+        // 1. Buscamos la cabecera de matrícula de Anderson para este periodo
+        $enrollment = Enrollment::where('person_id', $person->id)
+            ->where('academic_period_id', $period->id)
+            ->first();
+
+        if (!$enrollment) return; // Si no hay cabecera (importación previa), no hacemos nada
+
+        // 2. BUSCAMOS LAS SECCIONES QUE COINCIDAN:
+        // Anderson dice: "Soy de Matemática, Ciclo 9, Sección A, Turno Mañana"
+        // Buscamos todas las secciones que tengan esas mismas etiquetas
+        $matchingSections = CourseSection::where('academic_period_id', $period->id)
+            ->where('name', $enrollment->section_label)
+            ->where('shift_id', $enrollment->shift_id)
+            ->whereHas('course', function($q) use ($enrollment) {
+                $q->where('study_plan_id', $enrollment->study_plan_id)
+                ->where('cycle', $enrollment->cycle);
+            })
+            ->get();
+
+        // 3. LAS INSERTAMOS EN DETALLES (Si no existen)
+        foreach ($matchingSections as $section) {
+            $enrollment->details()->firstOrCreate(
+                ['course_id' => $section->course_id],
+                [
+                    'course_section_id' => $section->id,
+                    'status' => 'enrolled',
+                    'attempt_number' => 1,
+                    'is_legacy' => false
+                ]
+            );
+        }
     }
 }

@@ -11,11 +11,10 @@ import competencies from './competencies'
 import domains from './domains'
 import thesis from './thesis'
 import classrooms from './classrooms'
-import importMethod from './import'
 import imports from './imports'
-import admin from './admin'
+import reports from './reports'
 /**
- * @see routes/web.php:99
+ * @see routes/web.php:122
  * @route '/admin/dashboard'
  */
 export const dashboard = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -29,7 +28,7 @@ dashboard.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
- * @see routes/web.php:99
+ * @see routes/web.php:122
  * @route '/admin/dashboard'
  */
 dashboard.url = (options?: RouteQueryOptions) => {
@@ -37,7 +36,7 @@ dashboard.url = (options?: RouteQueryOptions) => {
 }
 
 /**
- * @see routes/web.php:99
+ * @see routes/web.php:122
  * @route '/admin/dashboard'
  */
 dashboard.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -45,7 +44,7 @@ dashboard.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     method: 'get',
 })
 /**
- * @see routes/web.php:99
+ * @see routes/web.php:122
  * @route '/admin/dashboard'
  */
 dashboard.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -54,7 +53,7 @@ dashboard.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
     /**
- * @see routes/web.php:99
+ * @see routes/web.php:122
  * @route '/admin/dashboard'
  */
     const dashboardForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -63,7 +62,7 @@ dashboard.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     })
 
             /**
- * @see routes/web.php:99
+ * @see routes/web.php:122
  * @route '/admin/dashboard'
  */
         dashboardForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -71,7 +70,7 @@ dashboard.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
             method: 'get',
         })
             /**
- * @see routes/web.php:99
+ * @see routes/web.php:122
  * @route '/admin/dashboard'
  */
         dashboardForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -85,7 +84,7 @@ dashboard.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
         })
     
     dashboard.form = dashboardForm
-const adminNamespace = {
+const admin = {
     dashboard: Object.assign(dashboard, dashboard),
 centrosPractica: Object.assign(centrosPractica, centrosPractica),
 asignacionesPractica: Object.assign(asignacionesPractica, asignacionesPractica),
@@ -99,9 +98,8 @@ competencies: Object.assign(competencies, competencies),
 domains: Object.assign(domains, domains),
 thesis: Object.assign(thesis, thesis),
 classrooms: Object.assign(classrooms, classrooms),
-import: Object.assign(importMethod, importMethod),
 imports: Object.assign(imports, imports),
-admin: Object.assign(admin, admin),
+reports: Object.assign(reports, reports),
 }
 
-export default adminNamespace
+export default admin

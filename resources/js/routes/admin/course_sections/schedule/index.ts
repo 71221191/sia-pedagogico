@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\Admin\ScheduleController::edit
- * @see app/Http/Controllers/Admin/ScheduleController.php:24
+ * @see app/Http/Controllers/Admin/ScheduleController.php:25
  * @route '/admin/secciones-cursos/{courseSection}/horario'
  */
 export const edit = (args: { courseSection: number | { id: number } } | [courseSection: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ edit.definition = {
 
 /**
 * @see \App\Http\Controllers\Admin\ScheduleController::edit
- * @see app/Http/Controllers/Admin/ScheduleController.php:24
+ * @see app/Http/Controllers/Admin/ScheduleController.php:25
  * @route '/admin/secciones-cursos/{courseSection}/horario'
  */
 edit.url = (args: { courseSection: number | { id: number } } | [courseSection: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -49,7 +49,7 @@ edit.url = (args: { courseSection: number | { id: number } } | [courseSection: n
 
 /**
 * @see \App\Http\Controllers\Admin\ScheduleController::edit
- * @see app/Http/Controllers/Admin/ScheduleController.php:24
+ * @see app/Http/Controllers/Admin/ScheduleController.php:25
  * @route '/admin/secciones-cursos/{courseSection}/horario'
  */
 edit.get = (args: { courseSection: number | { id: number } } | [courseSection: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -58,7 +58,7 @@ edit.get = (args: { courseSection: number | { id: number } } | [courseSection: n
 })
 /**
 * @see \App\Http\Controllers\Admin\ScheduleController::edit
- * @see app/Http/Controllers/Admin/ScheduleController.php:24
+ * @see app/Http/Controllers/Admin/ScheduleController.php:25
  * @route '/admin/secciones-cursos/{courseSection}/horario'
  */
 edit.head = (args: { courseSection: number | { id: number } } | [courseSection: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -68,7 +68,7 @@ edit.head = (args: { courseSection: number | { id: number } } | [courseSection: 
 
     /**
 * @see \App\Http\Controllers\Admin\ScheduleController::edit
- * @see app/Http/Controllers/Admin/ScheduleController.php:24
+ * @see app/Http/Controllers/Admin/ScheduleController.php:25
  * @route '/admin/secciones-cursos/{courseSection}/horario'
  */
     const editForm = (args: { courseSection: number | { id: number } } | [courseSection: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -78,7 +78,7 @@ edit.head = (args: { courseSection: number | { id: number } } | [courseSection: 
 
             /**
 * @see \App\Http\Controllers\Admin\ScheduleController::edit
- * @see app/Http/Controllers/Admin/ScheduleController.php:24
+ * @see app/Http/Controllers/Admin/ScheduleController.php:25
  * @route '/admin/secciones-cursos/{courseSection}/horario'
  */
         editForm.get = (args: { courseSection: number | { id: number } } | [courseSection: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -87,7 +87,7 @@ edit.head = (args: { courseSection: number | { id: number } } | [courseSection: 
         })
             /**
 * @see \App\Http\Controllers\Admin\ScheduleController::edit
- * @see app/Http/Controllers/Admin/ScheduleController.php:24
+ * @see app/Http/Controllers/Admin/ScheduleController.php:25
  * @route '/admin/secciones-cursos/{courseSection}/horario'
  */
         editForm.head = (args: { courseSection: number | { id: number } } | [courseSection: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -103,7 +103,7 @@ edit.head = (args: { courseSection: number | { id: number } } | [courseSection: 
     edit.form = editForm
 /**
 * @see \App\Http\Controllers\Admin\ScheduleController::store
- * @see app/Http/Controllers/Admin/ScheduleController.php:44
+ * @see app/Http/Controllers/Admin/ScheduleController.php:67
  * @route '/admin/secciones-cursos/{courseSection}/horario'
  */
 export const store = (args: { courseSection: number | { id: number } } | [courseSection: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -118,7 +118,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\Admin\ScheduleController::store
- * @see app/Http/Controllers/Admin/ScheduleController.php:44
+ * @see app/Http/Controllers/Admin/ScheduleController.php:67
  * @route '/admin/secciones-cursos/{courseSection}/horario'
  */
 store.url = (args: { courseSection: number | { id: number } } | [courseSection: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -151,7 +151,7 @@ store.url = (args: { courseSection: number | { id: number } } | [courseSection: 
 
 /**
 * @see \App\Http\Controllers\Admin\ScheduleController::store
- * @see app/Http/Controllers/Admin/ScheduleController.php:44
+ * @see app/Http/Controllers/Admin/ScheduleController.php:67
  * @route '/admin/secciones-cursos/{courseSection}/horario'
  */
 store.post = (args: { courseSection: number | { id: number } } | [courseSection: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -161,7 +161,7 @@ store.post = (args: { courseSection: number | { id: number } } | [courseSection:
 
     /**
 * @see \App\Http\Controllers\Admin\ScheduleController::store
- * @see app/Http/Controllers/Admin/ScheduleController.php:44
+ * @see app/Http/Controllers/Admin/ScheduleController.php:67
  * @route '/admin/secciones-cursos/{courseSection}/horario'
  */
     const storeForm = (args: { courseSection: number | { id: number } } | [courseSection: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -171,7 +171,7 @@ store.post = (args: { courseSection: number | { id: number } } | [courseSection:
 
             /**
 * @see \App\Http\Controllers\Admin\ScheduleController::store
- * @see app/Http/Controllers/Admin/ScheduleController.php:44
+ * @see app/Http/Controllers/Admin/ScheduleController.php:67
  * @route '/admin/secciones-cursos/{courseSection}/horario'
  */
         storeForm.post = (args: { courseSection: number | { id: number } } | [courseSection: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -182,7 +182,7 @@ store.post = (args: { courseSection: number | { id: number } } | [courseSection:
     store.form = storeForm
 /**
 * @see \App\Http\Controllers\Admin\ScheduleController::destroy
- * @see app/Http/Controllers/Admin/ScheduleController.php:79
+ * @see app/Http/Controllers/Admin/ScheduleController.php:102
  * @route '/admin/horarios/{schedule}'
  */
 export const destroy = (args: { schedule: number | { id: number } } | [schedule: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -197,7 +197,7 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\Admin\ScheduleController::destroy
- * @see app/Http/Controllers/Admin/ScheduleController.php:79
+ * @see app/Http/Controllers/Admin/ScheduleController.php:102
  * @route '/admin/horarios/{schedule}'
  */
 destroy.url = (args: { schedule: number | { id: number } } | [schedule: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -230,7 +230,7 @@ destroy.url = (args: { schedule: number | { id: number } } | [schedule: number |
 
 /**
 * @see \App\Http\Controllers\Admin\ScheduleController::destroy
- * @see app/Http/Controllers/Admin/ScheduleController.php:79
+ * @see app/Http/Controllers/Admin/ScheduleController.php:102
  * @route '/admin/horarios/{schedule}'
  */
 destroy.delete = (args: { schedule: number | { id: number } } | [schedule: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -240,7 +240,7 @@ destroy.delete = (args: { schedule: number | { id: number } } | [schedule: numbe
 
     /**
 * @see \App\Http\Controllers\Admin\ScheduleController::destroy
- * @see app/Http/Controllers/Admin/ScheduleController.php:79
+ * @see app/Http/Controllers/Admin/ScheduleController.php:102
  * @route '/admin/horarios/{schedule}'
  */
     const destroyForm = (args: { schedule: number | { id: number } } | [schedule: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -255,7 +255,7 @@ destroy.delete = (args: { schedule: number | { id: number } } | [schedule: numbe
 
             /**
 * @see \App\Http\Controllers\Admin\ScheduleController::destroy
- * @see app/Http/Controllers/Admin/ScheduleController.php:79
+ * @see app/Http/Controllers/Admin/ScheduleController.php:102
  * @route '/admin/horarios/{schedule}'
  */
         destroyForm.delete = (args: { schedule: number | { id: number } } | [schedule: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

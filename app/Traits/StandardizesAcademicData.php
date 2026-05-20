@@ -72,20 +72,28 @@ trait StandardizesAcademicData
     {
         if (empty($nombre)) return '';
 
-        // 1. Quitar tildes y eñes
-        $nombre = str_replace(
-            ['á', 'é', 'í', 'ó', 'ú', 'Á', 'É', 'Í', 'Ó', 'Ú', 'ñ', 'Ñ'],
-            ['a', 'e', 'i', 'o', 'u', 'a', 'e', 'i', 'o', 'u', 'n', 'n'],
-            $nombre
-        );
+        // 1. Quitar tildes y caracteres especiales (limpieza profunda)
+        $a = array('À', 'Á', 'Â', 'Ã', 'Ä', 'Å', 'Æ', 'Ç', 'È', 'É', 'Ê', 'Ë', 'Ì', 'Í', 'Î', 'Ï', 'Ð', 'Ñ', 'Ò', 'Ó', 'Ô', 'Õ', 'Ö', 'Ø', 'Ù', 'Ú', 'Û', 'Ü', 'Ý', 'ß', 'à', 'á', 'â', 'ã', 'ä', 'å', 'æ', 'ç', 'è', 'é', 'ê', 'ë', 'ì', 'í', 'î', 'ï', 'ñ', 'ò', 'ó', 'ô', 'õ', 'ö', 'ø', 'ù', 'ú', 'û', 'ü', 'ý', 'ÿ', 'Ā', 'ā', 'Ē', 'ē', 'Ī', 'ī', 'Ō', 'ō', 'Ū', 'ū');
+        $b = array('A', 'A', 'A', 'A', 'A', 'A', 'AE', 'C', 'E', 'E', 'E', 'E', 'I', 'I', 'I', 'I', 'D', 'N', 'O', 'O', 'O', 'O', 'O', 'O', 'U', 'U', 'U', 'U', 'Y', 's', 'a', 'a', 'a', 'a', 'a', 'a', 'ae', 'c', 'e', 'e', 'e', 'e', 'i', 'i', 'i', 'i', 'n', 'o', 'o', 'o', 'o', 'o', 'o', 'u', 'u', 'u', 'u', 'y', 'y', 'A', 'a', 'E', 'e', 'I', 'i', 'O', 'o', 'U', 'u');
+        $nombre = str_replace($a, $b, $nombre);
 
-        // 2. Quitar saltos de línea y tabulaciones que a veces vienen del Excel
-        $nombre = str_replace(["\r", "\n", "\t"], ' ', $nombre);
+        // 2. Todo a minúsculas y quitar todo lo que no sea letras o números
+        $nombre = strtolower($nombre);
+        $nombre = preg_replace('/[^a-z0-9]/', '', $nombre);
 
-        // 3. Todo a minúsculas, quitar TODO lo que no sea letra o número
-        $nombre = preg_replace('/[^a-z0-9]/', '', strtolower($nombre));
+        return $nombre; // Ejemplo: "Matemática I (FG)" -> "matematicaifg"
+    }
 
-        return $nombre;
+    /**
+     * Genera un código de curso único basado en el programa y un número aleatorio
+     */
+    public function generarCodigoCurso($planId, $ciclo)
+    {
+        $plan = \App\Models\StudyPlan::with('studyProgram')->find($planId);
+        $prefijo = substr(preg_replace('/[^A-Z]/', '', strtoupper($plan->studyProgram->name ?? 'CUR')), 0, 3);
+        $cicloNum = $this->traducirCicloANumero($ciclo);
+
+        return $prefijo . $cicloNum . '-' . str_pad(rand(100, 999), 3, '0', STR_PAD_LEFT);
     }
 
     public function normalizarSlug($texto)

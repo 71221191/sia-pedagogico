@@ -1,6 +1,7 @@
 <script setup>
 import { useForm, Head, Link } from '@inertiajs/vue3';
-import { ArrowLeft, Save, UserCheck, UserMinus, Clock } from 'lucide-vue-next';
+import { ArrowLeft, Save, UserCheck, UserMinus, Clock, AlertTriangle } from 'lucide-vue-next';
+
 
 const props = defineProps({
     session: Object,
@@ -56,9 +57,21 @@ const submit = () => {
                 </thead>
                 <tbody class="divide-y divide-gray-100">
                     <tr v-for="(record, index) in form.records" :key="record.person_id" class="hover:bg-gray-50 transition">
-                        <td class="p-4">
-                            <div class="text-xs font-bold text-gray-900 uppercase">{{ props.students[index].full_name }}</div>
+
+                        <td class="p-4 border-r">
+                            <div class="text-xs font-black text-gray-900 uppercase leading-none">
+                                {{ props.students[index].full_name }}
+                            </div>
+
+                            <!-- ALERTA DE DPI (Solo si tiene faltas) -->
+                            <div v-if="props.students[index].warning?.absences > 0" class="flex items-center mt-1 gap-1">
+                                <AlertTriangle class="w-3 h-3" :class="props.students[index].warning.is_critical ? 'text-rose-500' : 'text-amber-500'" />
+                                <span class="text-[8px] font-bold uppercase" :class="props.students[index].warning.is_critical ? 'text-rose-500' : 'text-amber-500'">
+                                    Acumula {{ props.students[index].warning.absences }} faltas ({{ props.students[index].warning.percentage }}%)
+                                </span>
+                            </div>
                         </td>
+
                         <td class="p-2">
                             <div class="flex justify-center items-center space-x-1">
                                 <!-- Botón Presente -->
@@ -84,6 +97,14 @@ const submit = () => {
                                     <UserMinus class="w-5 h-5" />
                                     <span class="text-[8px] font-black uppercase mt-1">F</span>
                                 </button>
+
+                                <!-- Botón Justificado (Ponlo después del de Falta) -->
+                                <button type="button" @click="record.status = 'justified'"
+                                    :class="record.status === 'justified' ? 'bg-blue-100 text-blue-700 border-blue-500' : 'bg-white text-gray-400 border-gray-200'"
+                                    class="p-2 rounded-xl border-2 transition flex-1 flex flex-col items-center">
+                                    <ShieldCheck class="w-5 h-5" /> <!-- Importa ShieldCheck si quieres usarlo o deja el icono que prefieras -->
+                                    <span class="text-[8px] font-black uppercase mt-1">J</span>
+                                </button>
                             </div>
                         </td>
                     </tr>
@@ -94,9 +115,10 @@ const submit = () => {
         <!-- Botón de Guardar Fijo al fondo (Sticky) -->
         <div class="fixed bottom-8 left-1/2 -translate-x-1/2 w-full max-w-md px-4">
             <button @click="submit" :disabled="form.processing"
-                class="w-full bg-gray-900 text-white py-4 rounded-2xl font-black shadow-2xl hover:bg-blue-700 transition flex items-center justify-center space-x-3 transform active:scale-95">
+                class="w-full py-4 rounded-2xl font-black shadow-2xl transition flex items-center justify-center space-x-3 transform active:scale-95"
+                :class="form.processing ? 'bg-indigo-400' : 'bg-gray-900 hover:bg-indigo-600 text-white'">
                 <Save class="w-6 h-6" />
-                <span>{{ form.processing ? 'Sincronizando...' : 'GUARDAR ASISTENCIA' }}</span>
+                <span>{{ form.processing ? 'Sincronizando...' : 'FINALIZAR Y FIRMAR' }}</span>
             </button>
         </div>
     </div>

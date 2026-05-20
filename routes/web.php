@@ -37,8 +37,16 @@ use App\Http\Controllers\Admin\ThesisController as AdminThesisController;
 use App\Http\Controllers\Teacher\ThesisReviewController;
 use App\Http\Controllers\Admin\IdentityController;
 use App\Http\Controllers\Admin\ClassroomController;
+use App\Http\Controllers\Teacher\AcademicUnitController;
 use App\Http\Controllers\Teacher\AvailabilityController;
+use App\Http\Controllers\Teacher\LearningResourceController;
+use App\Http\Controllers\Teacher\TaskController;
 use App\Http\Controllers\Admin\ScheduleController;
+use App\Http\Controllers\Admin\ImportHistoryController;
+use App\Http\Controllers\Student\CourseContentController;
+use App\Http\Controllers\Teacher\LearningForumController;
+use App\Http\Controllers\Student\TaskSubmissionController as StudentTaskController;
+use App\Http\Controllers\Teacher\TaskSubmissionController as TeacherTaskController;
 
 
 // 1. RUTA DE BIENVENIDA (Landing Page)
@@ -56,18 +64,31 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::middleware(['auth', 'role:estudiante'])->prefix('estudiante')->name('student.')->group(function () {
         Route::get('/mi-progreso', [ProgressController::class, 'index'])->name('progress.index');
 
+        // ESTA ES LA RUTA QUE TE FALTA Y QUE PIDE EL SIDEBAR
+        Route::get('/mi-horario', [ProgressController::class, 'mySchedule'])->name('schedule');
+
         Route::prefix('tesis')->name('thesis.')->group(function () {
             Route::get('/', [StudentThesisController::class, 'index'])->name('index');
             Route::get('/registrar', [StudentThesisController::class, 'create'])->name('create');
             Route::post('/registrar', [StudentThesisController::class, 'store'])->name('store');
             Route::post('/{project}/documento', [StudentThesisController::class, 'uploadDocument'])->name('upload-document');
         });
-        Route::get('/mi-progreso/descargar-pdf', [ProgressController::class, 'downloadPdf'])->name('progress.pdf');
-        Route::get('/mi-horario', [ProgressController::class, 'mySchedule'])->name('schedule');
 
+        Route::get('/mi-progreso/descargar-pdf', [ProgressController::class, 'downloadPdf'])->name('progress.pdf');
+
+        // Rutas de descarga (Mantener solo estas aquí)
+        Route::get('/mi-horario/pdf', [ProgressController::class, 'downloadSchedulePdf'])->name('schedule.pdf');
+        Route::get('/mi-horario/excel', [ProgressController::class, 'downloadScheduleExcel'])->name('schedule.excel');
+
+        // Ruta para ver el contenido de un curso específico
+        Route::get('/mis-cursos/{section}', [CourseContentController::class, 'show'])->name('courses.show');
+
+        // Dentro del grupo student.
+        Route::get('/tareas/{task}', [StudentTaskController::class, 'show'])->name('tasks.show');
+        Route::post('/tareas/{task}/entregar', [StudentTaskController::class, 'store'])->name('tasks.submit');
     });
 
-    // --- 2. RUTAS GENERALES (Sin el prefijo student.) ---
+    // --- 2. RUTAS GENERALES ---
     Route::middleware(['auth'])->group(function () {
 
         // El Dashboard es UNIVERSAL
@@ -89,7 +110,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::post('/matricula', [EnrollmentController::class, 'store'])->name('enrollment.store');
         });
 
-        Route::get('/mi-horario/descargar', [ProgressController::class, 'downloadSchedulePdf'])->name('schedule.pdf');
+        // Rutas de Interacción en Foros (Compartidas)
+        Route::get('/foro/{forum}', [App\Http\Controllers\ForumController::class, 'show'])->name('student.forums.show');
+        Route::post('/foro/{forum}/comentar', [App\Http\Controllers\ForumController::class, 'storePost'])->name('student.forums.store-post');
     });
 
     // --- ZONA ADMINISTRATIVA (Protegida) ---
@@ -177,7 +200,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/secciones-cursos/{courseSection}/horario', [ScheduleController::class, 'store'])->name('course_sections.schedule.store');
         Route::delete('/horarios/{schedule}', [ScheduleController::class, 'destroy'])->name('course_sections.schedule.destroy');
 
+        Route::get('/importaciones/historial', [ImportHistoryController::class, 'index'])->name('imports.history');
+        Route::get('/importaciones/descargar/{import}', [ImportHistoryController::class, 'download'])->name('imports.download');
 
+        Route::get('/reportes/nomina-matricula/{courseSection}', [ReportController::class, 'nominaMatricula'])
+            ->name('reports.nomina');
+
+        Route::get('/reportes/cuadro-estadistico', [ReportController::class, 'cuadroEstadistico'])
+            ->name('reports.cuadro-estadistico');
     });
 
     // Solo Tesorería y Admin pueden entrar aquí
@@ -264,6 +294,34 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         Route::get('/mi-disponibilidad', [AvailabilityController::class, 'index'])->name('availability.index');
         Route::post('/mi-disponibilidad', [AvailabilityController::class, 'store'])->name('availability.store');
+
+        Route::get('/secciones/{section}/unidades', [AcademicUnitController::class, 'index'])->name('units.index');
+        Route::post('/secciones/{section}/unidades-batch', [AcademicUnitController::class, 'storeBatch'])->name('units.store-batch');
+        Route::put('/unidades/{unit}', [AcademicUnitController::class, 'update'])->name('units.update');
+        Route::delete('/unidades/{unit}', [AcademicUnitController::class, 'destroy'])->name('units.destroy');
+
+        Route::post('/secciones/{section}/unidades/agregar-una', [AcademicUnitController::class, 'addOneUnit'])->name('units.add-one');
+
+        // Gestión de Recursos de Aprendizaje
+        Route::get('/unidades/{unit}/recursos', [LearningResourceController::class, 'index'])->name('resources.index');
+        Route::post('/unidades/{unit}/recursos', [LearningResourceController::class, 'store'])->name('resources.store');
+        Route::patch('/recursos/{resource}/toggle', [LearningResourceController::class, 'toggleVisibility'])->name('resources.toggle');
+        Route::delete('/recursos/{resource}', [LearningResourceController::class, 'destroy'])->name('resources.destroy');
+
+        // Gestión de Tareas (Actividades)
+        Route::get('/unidades/{unit}/tareas', [TaskController::class, 'index'])->name('tasks.index');
+        Route::post('/unidades/{unit}/tareas', [TaskController::class, 'store'])->name('tasks.store');
+        Route::delete('/tareas/{task}', [TaskController::class, 'destroy'])->name('tasks.destroy');
+
+        // Revisión y Calificación de Entregas
+        Route::get('/tareas/{task}/entregas', [TeacherTaskController::class, 'index'])->name('submissions.index');
+        Route::patch('/entregas/{submission}/calificar', [TeacherTaskController::class, 'grade'])->name('submissions.grade');
+
+        // Gestión de Foros
+        Route::get('/unidades/{unit}/foros', [LearningForumController::class, 'index'])->name('forums.index');
+        Route::post('/unidades/{unit}/foros', [LearningForumController::class, 'store'])->name('forums.store');
+        Route::patch('/foros/{forum}/toggle', [LearningForumController::class, 'toggle'])->name('forums.toggle');
+        Route::delete('/foros/{forum}', [LearningForumController::class, 'destroy'])->name('forums.destroy');
     });
 });
 

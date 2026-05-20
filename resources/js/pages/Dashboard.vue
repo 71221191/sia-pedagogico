@@ -168,11 +168,58 @@ const props = defineProps({
                 </div>
             </div>
 
-            <!-- MENSAJE PARA ADMIN / DOCENTE (Aún por diseñar) -->
-            <div v-else class="text-center py-20 bg-white rounded-[3rem] border-2 border-dashed">
-                <Users class="w-16 h-16 mx-auto text-gray-200 mb-4" />
-                <h2 class="text-xl font-bold text-gray-400 uppercase">Perfil de Personal</h2>
-                <p class="text-gray-400 italic">Bienvenido al sistema de gestión. Su legajo profesional está siendo procesado.</p>
+            <!-- ESCENARIO PARA DOCENTE -->
+            <div v-else-if="$page.props.teacherProfile" class="space-y-8">
+
+                <!-- Header Profesional -->
+                <div class="bg-white rounded-[3rem] shadow-xl border border-gray-100 overflow-hidden transition-all hover:shadow-2xl">
+                    <div class="bg-emerald-900 h-24 w-full relative"></div>
+                    <div class="px-10 pb-8 -mt-12 relative z-10 flex flex-col md:flex-row items-center md:items-end gap-6">
+                        <div class="w-32 h-32 rounded-3xl border-8 border-white bg-gray-200 shadow-2xl overflow-hidden">
+                            <img v-if="$page.props.teacherProfile.photo" :src="$page.props.teacherProfile.photo" class="w-full h-full object-cover" />
+                            <User v-else class="w-full h-full p-6 text-gray-400" />
+                        </div>
+                        <div class="flex-1 text-center md:text-left">
+                            <h1 class="text-2xl font-black text-gray-900 uppercase tracking-tighter">{{ $page.props.teacherProfile.full_name }}</h1>
+                            <p class="text-emerald-600 font-bold text-xs uppercase tracking-widest">
+                                {{ $page.props.teacherProfile.degree }} | {{ $page.props.teacherProfile.condition }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Widgets de Gestión -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- Horas Semanales -->
+                    <div class="bg-white p-6 rounded-[2rem] border border-gray-100 shadow-sm flex items-center gap-4">
+                        <div class="bg-blue-100 text-blue-600 p-4 rounded-2xl"><Clock /></div>
+                        <div>
+                            <span class="text-2xl font-black block">{{ $page.props.teacherProfile.stats.weekly_hours }}h</span>
+                            <span class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Carga Horaria Semanal</span>
+                        </div>
+                    </div>
+
+                    <!-- Alumnos Totales -->
+                    <div class="bg-white p-6 rounded-[2rem] border border-gray-100 shadow-sm flex items-center gap-4">
+                        <div class="bg-emerald-100 text-emerald-600 p-4 rounded-2xl"><Users /></div>
+                        <div>
+                            <span class="text-2xl font-black block">{{ $page.props.teacherProfile.stats.total_students }}</span>
+                            <span class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Alumnos bajo supervisión</span>
+                        </div>
+                    </div>
+
+                    <!-- Estado Documentario -->
+                    <div class="bg-white p-6 rounded-[2rem] border border-gray-100 shadow-sm flex items-center gap-4">
+                        <div :class="$page.props.teacherProfile.stats.portfolio_ok ? 'bg-green-100 text-green-600' : 'bg-amber-100 text-amber-600'" class="p-4 rounded-2xl">
+                            <ShieldCheck v-if="$page.props.teacherProfile.stats.portfolio_ok" />
+                            <AlertCircle v-else />
+                        </div>
+                        <div>
+                            <span class="text-xs font-black block uppercase">{{ $page.props.teacherProfile.stats.portfolio_ok ? 'Al día' : 'Pendientes' }}</span>
+                            <span class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Portafolio Académico</span>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </AppLayout>

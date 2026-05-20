@@ -1,6 +1,6 @@
 <script setup>
 import { useForm, router, Link } from '@inertiajs/vue3'; // Añadimos Link aquí
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { AlertCircle, Upload } from 'lucide-vue-next';
 
 const props = defineProps({
@@ -20,6 +20,21 @@ const closeActa = () => {
         });
     }
 };
+
+// 1. Función para el color de la nota
+const getGradeColorClass = (scaleId) => {
+    const scale = props.gradeScales.find(s => s.id === scaleId);
+    if (!scale) return 'text-gray-400';
+
+    const val = parseFloat(scale.numeric_equivalent);
+
+    if (val === 0) return 'bg-orange-50 text-orange-700 border-orange-200'; // NP / 00
+    if (val < 3.0) return 'bg-red-50 text-red-700 border-red-200';        // Desaprobado
+    return 'bg-blue-50 text-blue-700 border-blue-200';                 // Aprobado
+};
+
+// 2. Variable para saber si podemos editar
+const canEdit = computed(() => props.isSyllabusApproved && !props.section.is_closed);
 
 // Función para convertir el promedio (1-5) a nota vigesimal (0-20)
 const getVigesimal = (avg) => {
@@ -188,7 +203,8 @@ const save = () => {
                                 <td v-for="comp in section.course.competencies" :key="comp.id" class="p-2 border-r">
                                     <select v-model="student.competencies[comp.id].grade_scale_id"
                                             :disabled="section.is_closed"
-                                            class="w-full text-xs font-bold border-none bg-transparent focus:ring-0 cursor-pointer">
+                                            :class="getGradeColorClass(student.competencies[comp.id].grade_scale_id)"
+                                            class="w-full text-[10px] font-black border-2 rounded-xl py-2 px-1 focus:ring-0 transition-colors cursor-pointer text-center">
                                         <option value="">-</option>
                                         <option v-for="scale in gradeScales" :key="scale.id" :value="scale.id">
                                             {{ scale.name }}
@@ -212,7 +228,8 @@ const save = () => {
                                 <td class="p-2 text-center border-r">
                                     <input type="number" v-model="student.final_score"
                                         :disabled="section.is_closed"
-                                        class="w-20 text-center font-black text-lg bg-transparent border-none focus:ring-0"
+                                        :class="student.final_score >= 11 ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-rose-50 text-rose-700 border-rose-200'"
+                                        class="w-16 text-center font-black text-sm rounded-xl border-2 focus:ring-0 transition-colors"
                                         min="0" max="20" />
                                 </td>
                                 <td class="bg-gray-100/50 border-l"></td>

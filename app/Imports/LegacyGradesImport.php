@@ -9,9 +9,12 @@ use Maatwebsite\Excel\Events\{BeforeImport, AfterImport};
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\{Cache, Log, Hash};
 use App\Traits\StandardizesAcademicData;
+use App\Traits\TracksImportResults;
 
 class LegacyGradesImport implements OnEachRow, WithHeadingRow, WithChunkReading, WithEvents
 {
+    use TracksImportResults;
+
     use StandardizesAcademicData;
 
     public static $reporte = [
@@ -114,19 +117,21 @@ class LegacyGradesImport implements OnEachRow, WithHeadingRow, WithChunkReading,
 
                 // 8. CURSO (Búsqueda inteligente con huella digital)
                 $huellaNueva = $this->generarHuellaCurso($cursoNombre);
+                $cicloNum = $this->traducirCicloANumero($data['ciclo'] ?? '1');
 
-                // Traemos los cursos del plan para comparar en memoria (más rápido que mil consultas)
-                $course = Course::where('study_plan_id', $plan->id)->get()->first(function($c) use ($huellaNueva) {
-                    return $this->generarHuellaCurso($c->name) === $huellaNueva;
-                });
+                // BUSCAMOS EN LA DB USANDO LA LLAVE MAESTRA
+                $course = Course::where('study_plan_id', $plan->id)
+                                ->where('slug', $huellaNueva)
+                                ->first();
 
                 if (!$course) {
-                    // Solo si NO existe ni por asomo, lo creamos
+                    // Si el curso no existe, lo creamos pero con la misma huella
                     $course = Course::create([
                         'study_plan_id' => $plan->id,
-                        'name' => $cursoNombre,
-                        'cycle' => $data['ciclo'] ?? '1',
-                        'code' => 'L' . str_pad(rand(1, 99999), 5, '0', STR_PAD_LEFT),
+                        'name' => strtoupper(trim($cursoNombre)),
+                        'slug' => $huellaNueva, // <--- AQUÍ SE UNEN LOS DOS EXCEL
+                        'cycle' => $cicloNum,
+                        'code' => $this->generarCodigoCurso($plan->id, $cicloNum),
                         'credits' => 0,
                         'is_legacy' => true
                     ]);
@@ -178,4 +183,12 @@ class LegacyGradesImport implements OnEachRow, WithHeadingRow, WithChunkReading,
     }
 
     public function chunkSize(): int { return 200; } // Bajamos el tamaño del bloque para que PHP respire
+    public function getReporte() {
+        return [
+            'creados' => $this->c_created,
+            'actualizados' => $this->c_updated,
+            'omitidos' => $this->c_omitted,
+            'errores_count' => $this->c_errors,
+        ];
+    }
 }

@@ -13,6 +13,7 @@ use App\Helpers\NumberHelper;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Models\Schedule;
 use App\Models\TimeSlot;
+use App\Models\Enrollment;
 
 class ProgressController extends Controller
 {
@@ -40,11 +41,29 @@ class ProgressController extends Controller
             if ($currentEnrollment) {
                 foreach ($currentEnrollment->details as $detail) {
                     $attendanceStats = $this->attendanceService->getAttendanceWarning($detail->courseSection);
+
+                    // --- NUEVA LÓGICA DE DESGLOSE ---
+                    // Traemos las notas de las competencias que el docente configuró para este curso
+                    $competencyGrades = $detail->grades()
+                        ->with(['gradeScale']) // Para tener el nombre (Logrado, etc) y el valor
+                        ->join('competencies', 'grades.competency_id', '=', 'competencies.id')
+                        ->select('grades.*', 'competencies.code as comp_code')
+                        ->get()
+                        ->map(function($g) {
+                            return [
+                                'code'  => $g->comp_code, // Ej: C1
+                                'name'  => $g->gradeScale->name ?? '-', // Ej: Logrado
+                                'value' => $g->gradeScale->numeric_equivalent ?? 0,
+                            ];
+                        });
+
                     $currentProgress[] = [
-                        'course_name' => $detail->course->name,
-                        'course_code' => $detail->course->code,
+                        'section_id'   => $detail->course_section_id,
+                        'course_name'  => $detail->course->name,
+                        'course_code'  => $detail->course->code,
                         'current_grade' => $detail->final_score_numeric,
-                        'attendance' => $attendanceStats[$person->id] ?? [
+                        'competencies' => $competencyGrades, // <--- ENVIAMOS EL ARRAY DE NOTAS
+                        'attendance'   => $attendanceStats[$person->id] ?? [
                             'absences' => 0, 'percentage' => 0, 'is_danger' => false
                         ]
                     ];
@@ -176,33 +195,43 @@ class ProgressController extends Controller
         })
         ->get();
 
+        // 1. Buscamos el turno del alumno basado en su última matrícula
+        $currentEnrollment = \App\Models\Enrollment::where('person_id', $person->id)
+            ->where('academic_period_id', $period->id)
+            ->first();
+
+        $shiftId = $currentEnrollment ? $currentEnrollment->shift_id : 1;
+        $turnoNombre = ($shiftId == 1) ? 'mañana' : 'tarde';
+
         return Inertia::render('Student/MySchedule', [
             'schedules' => $schedules,
-            'timeSlots' => \App\Models\TimeSlot::orderBy('shift')->orderBy('start_time')->get(),
+            'shiftId'   => $shiftId, // <--- ENVIAMOS EL ID DEL TURNO
+            'timeSlots' => \App\Models\TimeSlot::where('shift', $turnoNombre)
+                            ->orderBy('start_time', 'asc') // Orden cronológico real
+                            ->get(),
             'days' => [
-                ['id' => 1, 'name' => 'Lunes'],
-                ['id' => 2, 'name' => 'Martes'],
-                ['id' => 3, 'name' => 'Miércoles'],
-                ['id' => 4, 'name' => 'Jueves'],
+                ['id' => 1, 'name' => 'Lunes'], ['id' => 2, 'name' => 'Martes'],
+                ['id' => 3, 'name' => 'Miércoles'], ['id' => 4, 'name' => 'Jueves'],
                 ['id' => 5, 'name' => 'Viernes'],
             ]
         ]);
     }
 
-    public function downloadSchedulePdf()
+    public function downloadScheduleExcel()
     {
         /** @var \App\Models\User $user */
         $user = Auth::user();
         $person = $user->person;
-
-        // 1. Identificamos el periodo que está actualmente abierto
         $period = AcademicPeriod::where('status', 'open')->first();
 
-        if (!$period) {
-            return back()->with('error', 'No se puede generar el horario porque no hay un periodo académico activo.');
-        }
+        if (!$period) return back()->with('error', 'No hay periodo activo.');
 
-        // 2. Buscamos todas las clases de las secciones donde el alumno tiene un registro en este periodo
+        $enrollment = Enrollment::where('person_id', $person->id)
+            ->where('academic_period_id', $period->id)
+            ->first();
+        $shiftName = ($enrollment && $enrollment->shift_id == 2) ? 'tarde' : 'mañana';
+
+        // 1. Reutilizamos tu lógica de mapeo (la que ya tenías para el PDF)
         $schedules = Schedule::with(['course', 'classroom', 'timeSlot', 'teacher'])
             ->where('academic_period_id', $period->id)
             ->whereIn('course_section_id', function($query) use ($person, $period) {
@@ -211,49 +240,31 @@ class ProgressController extends Controller
                     ->join('enrollments', 'enrollment_details.enrollment_id', '=', 'enrollments.id')
                     ->where('enrollments.person_id', $person->id)
                     ->where('enrollments.academic_period_id', $period->id);
-            })
-            ->get();
+            })->get();
 
-        // 3. --- LÓGICA DE MAPEO (Sincronización para el PDF) ---
-        // Creamos un mapa de coordenadas [dia_id - bloque_id] para que la vista no tenga que buscar
         $mapaHorario = [];
         foreach ($schedules as $s) {
             $key = $s->day_of_week . '-' . $s->time_slot_id;
             $mapaHorario[$key] = [
                 'curso' => $s->course->name,
-                'profe' => $s->teacher->last_name_p . ' ' . $s->teacher->names,
+                'profe' => $s->teacher->full_name,
                 'aula'  => $s->classroom->name ?? 'S.A.'
             ];
         }
 
-        // 4. Datos de soporte para la cuadrícula
-        $timeSlots = TimeSlot::orderBy('shift')->orderBy('start_time')->get();
-
-        $days = [
-            ['id' => 1, 'name' => 'LUNES'],
-            ['id' => 2, 'name' => 'MARTES'],
-            ['id' => 3, 'name' => 'MIÉRCOLES'],
-            ['id' => 4, 'name' => 'JUEVES'],
-            ['id' => 5, 'name' => 'VIERNES'],
+        $data = [
+            'person' => $person,
+            'timeSlots' => TimeSlot::where('shift', $shiftName)->orderBy('start_time')->get(),
+            'days' => [['id' => 1, 'name' => 'LUNES'], ['id' => 2, 'name' => 'MARTES'], ['id' => 3, 'name' => 'MIÉRCOLES'], ['id' => 4, 'name' => 'JUEVES'], ['id' => 5, 'name' => 'VIERNES']],
+            'mapaHorario' => $mapaHorario,
+            'periodName' => $period->name
         ];
 
-        // 5. Preparar Logos (Base64 para evitar latencia y errores de carga)
-        $logoMinedu = $this->convertImageToBase64(public_path('img/logo-minedu.png'));
-        $logoInsti = $this->convertImageToBase64(public_path('img/logo-instituto.png'));
-
-        // 6. Generar el PDF usando la vista Blade
-        $pdf = Pdf::loadView('reports.student_schedule', [
-            'person'      => $person,
-            'timeSlots'   => $timeSlots,
-            'days'        => $days,
-            'mapaHorario' => $mapaHorario, // El mapa que creamos arriba
-            'periodName'  => $period->name,
-            'logoMinedu'  => $logoMinedu,
-            'logoInsti'   => $logoInsti,
-        ]);
-
-        // Configuramos el PDF en Horizontal (Landscape) para que la semana quepa bien
-        return $pdf->setPaper('a4', 'landscape')->stream("Horario_{$person->dni}.pdf");
+        // 2. Exportamos usando la clase nueva
+        return \Maatwebsite\Excel\Facades\Excel::download(
+            new \App\Exports\StudentScheduleExport($data),
+            "Horario_{$person->dni}.xlsx"
+        );
     }
 
 }

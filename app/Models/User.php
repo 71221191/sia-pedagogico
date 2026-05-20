@@ -27,17 +27,28 @@ class User extends Authenticatable
         'remember_token',
     ];
 
-    // Relación con la tabla People (RF-03.1)
-    public function person()
-    {
-        return $this->hasOne(\App\Models\Person::class);
-    }
-    {
-        return $this->hasOne(\App\Models\Person::class);
-    }
+    // --- REVISA DESDE AQUÍ HACIA ABAJO ---
 
+    /**
+     * Relación con el perfil humano (Persona)
+     */
     public function person()
     {
+        // Un usuario tiene una persona vinculada por user_id
         return $this->hasOne(Person::class, 'user_id');
     }
+
+    /**
+     * Casts para tipos de datos
+     */
+    protected function casts(): array
+    {
+        return [
+            'email_verified_at' => 'datetime',
+            'password' => 'hashed',
+            'is_active' => 'boolean',
+            'must_change_password' => 'boolean',
+        ];
+    }
+
 }

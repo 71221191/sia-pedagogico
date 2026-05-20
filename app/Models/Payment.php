@@ -21,11 +21,14 @@ class Payment extends Model
         'status',                 // pending, approved, rejected
         'rejection_reason',
         'verified_by',
-        'verified_at'
+        'verified_at',
+        'paid_at',     // <--- AGREGAR
+        'is_imported' // <--- AGREGAR
     ];
 
     protected $casts = [
         'verified_at' => 'datetime',
+        'paid_at' => 'datetime',
     ];
 
     // Relación con el alumno/personal

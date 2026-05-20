@@ -17,9 +17,11 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { route } from 'ziggy-js';
 
 interface CourseProgress {
+    section_id: number;
     course_code: string;
     course_name: string;
     current_grade: number;
+    competencies: any[]; // <--- AGREGA ESTA LÍNEA
     attendance: {
         percentage: number;
         is_danger: boolean;
@@ -46,7 +48,7 @@ const props = defineProps({
     ppa: {
         type: Number,
         default: 0
-    },              // 13.6732
+    },
     totalCredits: Number,
     studentName: String,
     periodName: String
@@ -65,6 +67,13 @@ const togglePeriod = (index: number) => {
         expandedPeriods.value.push(index);
     }
 };
+
+const getMiniGradeColor = (value: number) => {
+    if (value === 0) return 'bg-orange-100 text-orange-700 border-orange-200'; // NP
+    if (value < 3) return 'bg-rose-100 text-rose-700 border-rose-200'; // Desaprobado
+    return 'bg-emerald-100 text-emerald-700 border-emerald-200'; // Aprobado
+};
+
 </script>
 
 <template>
@@ -75,11 +84,6 @@ const togglePeriod = (index: number) => {
             <!-- 1. RESUMEN DE RENDIMIENTO (ESTILO UNC PRO) -->
             <div class="bg-indigo-900 rounded-[2.5rem] p-8 text-white shadow-2xl mb-8 flex flex-col md:flex-row justify-between items-center gap-6 relative overflow-hidden">
                 <div class="absolute top-0 right-0 -mt-10 -mr-10 w-64 h-64 bg-white/5 rounded-full blur-3xl"></div>
-
-                <div class="relative z-10 text-center md:text-left">
-                    <h1 class="text-3xl font-black uppercase italic tracking-tighter">Expediente Académico</h1>
-                    <p class="text-indigo-300 text-xs font-bold uppercase tracking-[0.3em]">{{ studentName }}</p>
-                </div>
 
                 <div class="flex gap-8 relative z-10">
                     <div class="text-center">
@@ -147,6 +151,14 @@ const togglePeriod = (index: number) => {
                         <div v-if="item.attendance.is_danger" class="mt-4 p-3 bg-red-600 text-white rounded-xl flex items-center justify-center animate-pulse">
                             <AlertTriangle class="w-4 h-4 mr-2" />
                             <span class="text-[10px] font-black uppercase">¡RIESGO CRÍTICO DE DPI!</span>
+                        </div>
+
+                        <div class="mt-6 pt-4 border-t border-gray-50">
+                            <Link :href="route('student.courses.show', item.section_id)"
+                                classa="w-full flex items-center justify-center gap-2 py-3 bg-indigo-50 text-indigo-600 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-indigo-600 hover:text-white transition-all transform active:scale-95 shadow-sm">
+                                <BookOpen class="w-4 h-4" />
+                                Entrar al Aula Virtual
+                            </Link>
                         </div>
                     </div>
                 </div>

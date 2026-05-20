@@ -6,9 +6,12 @@ use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Illuminate\Support\Collection;
 use App\Models\Person;
+use App\Traits\TracksImportResults;
 
 class StudentsImport implements ToCollection, WithHeadingRow
 {
+    use TracksImportResults;
+
     public $reporte = [
         'creados'     => 0,
         'actualizados'=> 0,
@@ -54,5 +57,13 @@ class StudentsImport implements ToCollection, WithHeadingRow
                 $this->reporte['actualizados']++;
             }
         }
+    }
+    public function getReporte() {
+        return [
+            'creados' => $this->c_created,
+            'actualizados' => $this->c_updated,
+            'omitidos' => $this->c_omitted,
+            'errores_count' => $this->c_errors,
+        ];
     }
 }

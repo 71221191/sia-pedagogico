@@ -144,10 +144,17 @@ const getStatusClass = (status) => {
                                 <tr v-for="payment in payments" :key="payment.id" class="hover:bg-gray-50 transition">
                                     <td class="p-4">
                                         <div class="text-xs font-black text-gray-800 uppercase">{{ payment.payment_concept?.name }}</div>
-                                        <!-- HORA DE SUBIDA (Novedad) -->
+                                        <!-- FECHA DE PAGO (Corregida) -->
                                         <div class="text-[9px] text-gray-400 font-mono mt-1">
-                                            {{ new Date(payment.created_at).toLocaleDateString() }} - {{ new Date(payment.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) }}
+                                            <!-- Si es importado, mostramos paid_at sin hora. Si no, created_at con hora -->
+                                            <template v-if="payment.is_imported">
+                                                Pagado el: {{ new Date(payment.paid_at).toLocaleDateString() }}
+                                            </template>
+                                            <template v-else>
+                                                {{ new Date(payment.created_at).toLocaleDateString() }} - {{ new Date(payment.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) }}
+                                            </template>
                                         </div>
+
                                     </td>
                                     <td class="p-4">
                                         <div class="flex flex-col space-y-2">
