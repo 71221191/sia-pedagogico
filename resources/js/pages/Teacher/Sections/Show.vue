@@ -1,15 +1,12 @@
 <script setup>
-import { useForm, router, Link } from '@inertiajs/vue3'; // Añadimos Link aquí
+import { useForm, router, Link } from '@inertiajs/vue3';
 import { ref, computed } from 'vue';
-import { AlertCircle, Upload } from 'lucide-vue-next';
 
 const props = defineProps({
     section: Object,
     students: Array,
     gradeScales: Array,
-    evaluationType: String, // 'numerical' o 'competency'
-    attendanceStats: Object,
-    isSyllabusApproved: Boolean
+    evaluationType: String // 'numerical' o 'competency'
 });
 
 const closeActa = () => {
@@ -33,8 +30,8 @@ const getGradeColorClass = (scaleId) => {
     return 'bg-blue-50 text-blue-700 border-blue-200';                 // Aprobado
 };
 
-// 2. Variable para saber si podemos editar
-const canEdit = computed(() => props.isSyllabusApproved && !props.section.is_closed);
+// 2. Variable para saber si podemos editar (Ahora liberada sin validación de sílabo)
+const canEdit = computed(() => !props.section.is_closed);
 
 // Función para convertir el promedio (1-5) a nota vigesimal (0-20)
 const getVigesimal = (avg) => {
@@ -116,7 +113,7 @@ const save = () => {
                 <p class="text-gray-500 font-mono">SECCIÓN {{ section.name }} | TIPO: {{ evaluationType === 'competency' ? 'POR COMPETENCIAS (DCBN)' : 'VIGESIMAL (LEGACY)' }}</p>
             </div>
 
-            <!-- Si el acta ya está cerrada, mostramos el badge de éxito (fuera del muro) -->
+            <!-- Si el acta ya está cerrada, mostramos el badge de éxito -->
             <div v-if="section.is_closed" class="bg-gray-100 p-4 rounded-xl border-2 border-dashed border-gray-300 text-center">
                 <p class="text-gray-500 font-bold uppercase text-xs">
                     ✅ Esta acta fue cerrada el {{ new Date(section.acta_close_date).toLocaleDateString() }}
@@ -131,30 +128,8 @@ const save = () => {
             </div>
         </div>
 
-        <!-- ============================================================ -->
-        <!-- 1. SI EL SÍLABO NO ESTÁ APROBADO, MOSTRAMOS EL MURO -->
-        <!-- ============================================================ -->
-        <div v-if="!isSyllabusApproved" class="mb-8 p-10 bg-amber-50 border-2 border-dashed border-amber-200 rounded-[3rem] text-center shadow-inner">
-            <div class="bg-amber-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 text-amber-600">
-                <AlertCircle class="w-10 h-10" />
-            </div>
-            <h3 class="text-xl font-black text-amber-900 uppercase tracking-tighter">Registro de Notas Inhabilitado</h3>
-            <p class="text-sm text-amber-700 mt-2 max-w-md mx-auto">
-                Según la regla <b>RN-042</b>, su sílabo debe estar <b>APROBADO</b> por el Jefe de Área para poder calificar a sus estudiantes.
-            </p>
-
-            <Link :href="route('teacher.portfolio.index', { section: props.section.id })"
-                class="mt-6 inline-flex items-center px-6 py-3 bg-amber-600 text-white rounded-xl font-bold hover:bg-amber-700 transition shadow-lg shadow-amber-200">
-                <Upload class="w-4 h-4 mr-2" />
-                IR AL PORTAFOLIO Y SUBIR SÍLABO
-            </Link>
-        </div>
-
-        <!-- ============================================================ -->
-        <!-- 2. SI EL SÍLABO YA ESTÁ APROBADO, MOSTRAMOS LA SÁBANA NORMAL -->
-        <!-- ============================================================ -->
-        <div v-else>
-            <!-- Tabla de Calificaciones -->
+        <!-- Tabla de Calificaciones (Ahora se muestra siempre de forma directa) -->
+        <div>
             <div class="bg-white rounded-3xl shadow-2xl border border-gray-100 overflow-hidden">
                 <table class="w-full text-left border-collapse">
                     <thead>
@@ -180,29 +155,15 @@ const save = () => {
                         <tr v-for="(student, idx) in form.students" :key="student.detail_id" class="hover:bg-blue-50/50 transition">
                             <td class="p-4 text-gray-400 font-mono text-xs">{{ idx + 1 }}</td>
                             <td class="p-4 border-r">
-                                <div class="flex flex-col">
-                                    <span class="font-bold text-gray-900 uppercase text-xs"
-                                        :class="{'text-red-600': attendanceStats[student.person_id]?.is_danger}">
-                                        {{ student.student_name }}
-                                    </span>
-
-                                    <div v-if="attendanceStats[student.person_id]" class="mt-1">
-                                        <span v-if="attendanceStats[student.person_id].is_danger"
-                                            class="bg-red-600 text-white text-[8px] px-2 py-0.5 rounded-full font-black animate-pulse">
-                                            RIESGO DPI ({{ attendanceStats[student.person_id].percentage }}% FALTAS)
-                                        </span>
-                                        <span v-else-if="attendanceStats[student.person_id].absences > 0"
-                                            class="text-[9px] text-gray-400 italic">
-                                            Inasistencias: {{ attendanceStats[student.person_id].absences }}
-                                        </span>
-                                    </div>
-                                </div>
+                                <span class="font-bold text-gray-900 uppercase text-xs">
+                                    {{ student.student_name }}
+                                </span>
                             </td>
 
                             <template v-if="evaluationType === 'competency'">
                                 <td v-for="comp in section.course.competencies" :key="comp.id" class="p-2 border-r">
                                     <select v-model="student.competencies[comp.id].grade_scale_id"
-                                            :disabled="section.is_closed"
+                                            :disabled="!canEdit"
                                             :class="getGradeColorClass(student.competencies[comp.id].grade_scale_id)"
                                             class="w-full text-[10px] font-black border-2 rounded-xl py-2 px-1 focus:ring-0 transition-colors cursor-pointer text-center">
                                         <option value="">-</option>
@@ -227,7 +188,7 @@ const save = () => {
                             <template v-else>
                                 <td class="p-2 text-center border-r">
                                     <input type="number" v-model="student.final_score"
-                                        :disabled="section.is_closed"
+                                        :disabled="!canEdit"
                                         :class="student.final_score >= 11 ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-rose-50 text-rose-700 border-rose-200'"
                                         class="w-16 text-center font-black text-sm rounded-xl border-2 focus:ring-0 transition-colors"
                                         min="0" max="20" />
@@ -245,7 +206,7 @@ const save = () => {
             </div>
 
             <!-- Botones de Acción (Solo si no está cerrada) -->
-            <div v-if="!section.is_closed" class="mt-8 flex justify-end space-x-4">
+            <div v-if="canEdit" class="mt-8 flex justify-end space-x-4">
                 <button @click="save" :disabled="form.processing"
                         class="bg-blue-600 text-white px-8 py-3 rounded-xl font-black shadow-lg hover:bg-blue-700 transition">
                     {{ form.processing ? 'GUARDANDO...' : 'GUARDAR BORRADOR' }}

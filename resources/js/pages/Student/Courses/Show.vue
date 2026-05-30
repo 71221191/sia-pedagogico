@@ -1,170 +1,178 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
-import {
-    BookOpen, FileText, Link as LinkIcon,
-    Download, ExternalLink, Clock, CheckCircle,
-    AlertCircle, MessageSquare, ArrowLeft, GraduationCap
-} from 'lucide-vue-next';
+import { ArrowLeft, BookOpen, Download, Eye, Award, Calendar, Bookmark } from 'lucide-vue-next';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { route } from 'ziggy-js';
 
 const props = defineProps<{
     section: any,
-    units: any[]
+    competencies: any[],
+    finalScaleName: string,
+    schedule: any[],
+    status: string
 }>();
 
-// Función para convertir ciclo a Romano
-const toRoman = (num: any) => {
-    const map: any = { 1:'I', 2:'II', 3:'III', 4:'IV' };
-    return map[num] || num;
+// Estilo del badge de Escala Cualitativa Final
+const getScaleStyle = (scale: string) => {
+    const s = scale.toLowerCase();
+    if (s.includes('destacado')) return 'bg-purple-50 text-purple-700 border-purple-200';
+    if (s.includes('logrado')) return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+    if (s.includes('proceso')) return 'bg-amber-50 text-amber-700 border-amber-200';
+    if (s.includes('inicio')) return 'bg-rose-50 text-rose-700 border-rose-200';
+    return 'bg-gray-100 text-gray-700 border-gray-200';
 };
 
-// Lógica para el estado de la tarea del alumno
-const getTaskStatus = (task: any) => {
-    if (!task.my_submission) return { label: 'Pendiente', class: 'bg-gray-100 text-gray-500', icon: Clock };
-
-    if (task.my_submission.status === 'graded') {
-        return { label: `Calificado: ${task.my_submission.score}`, class: 'bg-emerald-100 text-emerald-700', icon: CheckCircle };
-    }
-
-    return { label: 'Enviado', class: 'bg-blue-100 text-blue-700', icon: CheckCircle };
+const toRoman = (num: any) => {
+    const map: any = { 1:'I', 2:'II', 3:'III', 4:'IV', 5:'V', 6:'VI', 7:'VII', 8:'VIII', 9:'IX', 10:'X' };
+    return map[num] || num;
 };
 </script>
 
 <template>
     <Head :title="section.course.name" />
     <AppLayout>
-        <div class="p-4 md:p-8 max-w-5xl mx-auto bg-gray-50 min-h-screen">
+        <div class="p-4 md:p-8 max-w-7xl mx-auto bg-gray-50 min-h-screen">
 
-            <!-- ENCABEZADO DEL CURSO -->
-            <div class="mb-10">
-                <Link :href="route('dashboard')" class="text-[10px] font-black text-gray-400 uppercase flex items-center mb-4 hover:text-indigo-600 transition-all">
-                    <ArrowLeft class="w-3 h-3 mr-1" /> Regresar al Panel
+            <!-- Header -->
+            <div class="mb-8">
+                <Link :href="route('student.courses.index')" class="text-sm font-bold text-gray-500 uppercase flex items-center mb-2">
+                    <ArrowLeft class="w-4 h-4 mr-1" /> Volver a mis cursos
                 </Link>
-                <div class="bg-white p-8 rounded-[2.5rem] shadow-xl border border-gray-100 relative overflow-hidden">
-                    <div class="absolute top-0 right-0 p-8 opacity-5">
-                        <GraduationCap class="w-32 h-32" />
+                <h1 class="text-3xl font-black text-gray-900 uppercase tracking-tighter leading-tight">{{ section.course.name }}</h1>
+                <p class="text-gray-500 font-mono text-sm uppercase">Ficha Integral de Curso | Ciclo {{ toRoman(section.course.cycle) }}</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+                <!-- COLUMNA IZQUIERDA: INFORMACIÓN Y RECURSOS -->
+                <div class="lg:col-span-1 space-y-6">
+                    <!-- Ficha Informativa -->
+                    <div class="bg-white p-6 rounded-[2rem] border border-gray-100 shadow-sm space-y-4">
+                        <h2 class="font-black text-gray-800 text-xs uppercase tracking-widest flex items-center border-b pb-3">
+                            <Bookmark class="mr-2 w-4 h-4 text-indigo-600" /> Información del Curso
+                        </h2>
+                        <div class="space-y-3 text-xs uppercase">
+                            <div>
+                                <span class="block text-[9px] font-black text-gray-400">Código de Curso</span>
+                                <span class="font-bold text-gray-700">{{ section.course.code }}</span>
+                            </div>
+                            <div>
+                                <span class="block text-[9px] font-black text-gray-400">Programa de Estudios</span>
+                                <span class="font-bold text-gray-700">{{ section.course.study_plan.study_program.name }}</span>
+                            </div>
+                            <div class="grid grid-cols-3 gap-2">
+                                <div>
+                                    <span class="block text-[9px] font-black text-gray-400">Créditos</span>
+                                    <span class="font-bold text-gray-700">{{ section.course.credits }}</span>
+                                </div>
+                                <div>
+                                    <span class="block text-[9px] font-black text-gray-400">H. Teoría</span>
+                                    <span class="font-bold text-gray-700">{{ section.course.hours_theory }}</span>
+                                </div>
+                                <div>
+                                    <span class="block text-[9px] font-black text-gray-400">H. Práctica</span>
+                                    <span class="font-bold text-gray-700">{{ section.course.hours_practice }}</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="relative z-10">
-                        <span class="px-3 py-1 bg-indigo-50 text-indigo-600 rounded-full text-[10px] font-black uppercase tracking-widest">
-                            Curso Académico
-                        </span>
-                        <h1 class="text-3xl font-black text-gray-900 uppercase tracking-tighter mt-2 leading-tight">
-                            {{ section.course.name }}
-                        </h1>
-                        <div class="flex items-center gap-4 mt-4 text-gray-500 text-xs font-bold uppercase tracking-widest">
-                            <span class="flex items-center gap-1"><BookOpen class="w-4 h-4" /> Ciclo {{ toRoman(section.course.cycle) }}</span>
-                            <span>•</span>
-                            <span class="flex items-center gap-1"><CheckCircle class="w-4 h-4" /> Prof. {{ section.teacher.names }}</span>
+
+                    <!-- Ficha Docente -->
+                    <div class="bg-white p-6 rounded-[2rem] border border-gray-100 shadow-sm space-y-4">
+                        <h2 class="font-black text-gray-800 text-xs uppercase tracking-widest flex items-center border-b pb-3">
+                            <Award class="mr-2 w-4 h-4 text-emerald-600" /> Profesor Asignado
+                        </h2>
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 bg-gray-100 rounded-2xl flex items-center justify-center overflow-hidden">
+                                <img v-if="section.teacher.official_photo_path" :src="'/storage/' + section.teacher.official_photo_path" class="object-cover w-full h-full" />
+                                <span v-else class="font-black text-lg text-gray-400">P</span>
+                            </div>
+                            <div>
+                                <h3 class="font-black text-gray-900 text-xs uppercase leading-tight">{{ section.teacher.full_name }}</h3>
+                                <p class="text-[9px] text-gray-400 uppercase font-mono mt-1">docente pedagógico</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Horario del Curso -->
+                    <div class="bg-white p-6 rounded-[2rem] border border-gray-100 shadow-sm space-y-4">
+                        <h2 class="font-black text-gray-800 text-xs uppercase tracking-widest flex items-center border-b pb-3">
+                            <Calendar class="mr-2 w-4 h-4 text-blue-600" /> Mi Horario de Clases
+                        </h2>
+                        <div v-if="schedule.length > 0" class="space-y-3">
+                            <div v-for="item in schedule" class="p-3 bg-gray-50 rounded-xl flex justify-between items-center text-xs">
+                                <div>
+                                    <span class="block font-black text-gray-700 uppercase">{{ item.day_name }}</span>
+                                    <span class="text-[10px] text-gray-400 font-medium">{{ item.start }} a {{ item.end }}</span>
+                                </div>
+                                <span class="px-2.5 py-1 bg-white border rounded-lg font-bold text-gray-600 uppercase text-[9px]">{{ item.classroom }}</span>
+                            </div>
+                        </div>
+                        <p v-else class="text-[10px] text-gray-400 font-bold uppercase text-center italic py-2">Horario no asignado</p>
+                    </div>
+
+                    <!-- Sílabo -->
+                    <div class="bg-white p-6 rounded-[2rem] border border-gray-100 shadow-sm space-y-4">
+                        <h2 class="font-black text-gray-800 text-xs uppercase tracking-widest flex items-center border-b pb-3">
+                            <BookOpen class="mr-2 w-4 h-4 text-rose-600" /> Sílabo de la Asignatura
+                        </h2>
+                        <div v-if="section.syllabus_path" class="flex items-center justify-between gap-3">
+                            <a :href="'/storage/' + section.syllabus_path" target="_blank"
+                                class="flex-1 flex items-center justify-center gap-2 py-3 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-xl font-black text-[10px] uppercase transition-all border border-rose-100 shadow-sm">
+                                <Eye class="w-4 h-4" /> Visualizar Sílabo
+                            </a>
+                            <a :href="'/storage/' + section.syllabus_path" download
+                                class="p-3 bg-gray-900 hover:bg-rose-600 text-white rounded-xl transition-all shadow-lg shadow-gray-100">
+                                <Download class="w-4 h-4" />
+                            </a>
+                        </div>
+                        <p v-else class="text-[10px] text-gray-400 font-bold uppercase text-center italic py-2">El docente aún no ha subido el sílabo</p>
+                    </div>
+                </div>
+
+                <!-- COLUMNA DERECHA: NOTAS POR COMPETENCIA (DCBN) -->
+                <div class="lg:col-span-2 space-y-6">
+
+                    <!-- Tarjeta de Promedio Cualitativo Final -->
+                    <div :class="getScaleStyle(finalScaleName)"
+                        class="p-8 rounded-[2.5rem] shadow-xl border-2 flex flex-col md:flex-row items-center justify-between gap-6 transition-all duration-300">
+                        <div>
+                            <span class="block text-[10px] font-black uppercase opacity-60 tracking-widest mb-1">Escala Cualitativa Final</span>
+                            <span class="text-4xl md:text-5xl font-black tracking-tighter uppercase italic leading-none">{{ finalScaleName }}</span>
+                        </div>
+                        <div class="text-center md:text-right">
+                            <span class="block text-[9px] font-black uppercase opacity-50 tracking-widest mb-1">Estado de Matrícula</span>
+                            <span class="px-4 py-1.5 bg-white/60 backdrop-blur border rounded-full text-[10px] font-black uppercase tracking-widest">
+                                {{ status === 'approved' ? 'Aprobado' : (status === 'enrolled' ? 'En Curso' : 'Desaprobado') }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Desglose de Competencias -->
+                    <div class="space-y-4">
+                        <h2 class="font-black text-gray-800 text-xs uppercase tracking-widest pl-2">Desglose de Calificaciones por Competencia</h2>
+
+                        <div v-for="comp in competencies" :key="comp.code"
+                            class="bg-white rounded-[2rem] border border-gray-100 shadow-sm p-6 flex flex-col md:flex-row items-center justify-between hover:shadow-md transition-all gap-4">
+
+                            <div class="flex items-start space-x-4 w-full md:w-auto">
+                                <div class="bg-indigo-50 text-indigo-700 p-3 rounded-2xl font-black text-xs font-mono">
+                                    {{ comp.code }}
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-gray-700 uppercase text-xs leading-normal max-w-lg">{{ comp.description }}</h3>
+                                </div>
+                            </div>
+
+                            <span :class="getScaleStyle(comp.scale_name)"
+                                class="px-4 py-1.5 rounded-full text-[9px] font-black uppercase border-2 flex items-center gap-1 w-full md:w-auto justify-center md:justify-end">
+                                {{ comp.scale_name }}
+                            </span>
                         </div>
                     </div>
                 </div>
+
             </div>
-
-            <!-- LISTADO DE UNIDADES -->
-            <div class="space-y-10">
-                <div v-for="unit in units" :key="unit.id" class="animate-in slide-in-from-bottom-4">
-                    <div class="flex items-center gap-4 mb-6">
-                        <div class="bg-gray-900 text-white w-12 h-12 rounded-2xl flex items-center justify-center font-black text-lg shadow-lg">
-                            {{ toRoman(unit.order) }}
-                        </div>
-                        <h2 class="text-xl font-black text-gray-800 uppercase tracking-tight">{{ unit.name }}</h2>
-                        <div class="h-[2px] flex-1 bg-gray-200"></div>
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-                        <!-- BLOQUE DE RECURSOS (Materiales) -->
-                        <div class="space-y-3">
-                            <h3 class="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center ml-2">
-                                <FileText class="w-3 h-3 mr-2" /> Materiales de Estudio
-                            </h3>
-                            <div v-for="res in unit.resources" :key="res.id"
-                                 class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between hover:bg-indigo-50/30 transition-all group">
-                                <div class="flex items-center gap-3">
-                                    <div :class="res.type === 'file' ? 'text-blue-600 bg-blue-50' : 'text-amber-600 bg-amber-50'" class="p-2 rounded-lg">
-                                        <FileText v-if="res.type === 'file'" class="w-4 h-4" />
-                                        <LinkIcon v-else class="w-4 h-4" />
-                                    </div>
-                                    <span class="text-xs font-bold text-gray-700 uppercase leading-none">{{ res.title }}</span>
-                                </div>
-                                <a :href="res.type === 'file' ? '/storage/' + res.file_path : res.url" target="_blank"
-                                   class="p-2 text-gray-400 hover:text-indigo-600 transition-colors">
-                                    <Download v-if="res.type === 'file'" class="w-4 h-4" />
-                                    <ExternalLink v-else class="w-4 h-4" />
-                                </a>
-                            </div>
-                            <p v-if="unit.resources.length === 0" class="text-[10px] text-gray-300 italic ml-2">No hay materiales publicados.</p>
-                        </div>
-
-                        <!-- BLOQUE DE ACTIVIDADES (Tareas) -->
-                        <div class="space-y-3">
-                            <h3 class="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center ml-2">
-                                <AlertCircle class="w-3 h-3 mr-2" /> Actividades Calificables
-                            </h3>
-                            <div v-for="task in unit.tasks" :key="task.id"
-                                 class="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm space-y-4">
-
-                                <div class="flex justify-between items-start">
-                                    <div class="flex-1">
-                                        <h4 class="text-xs font-black text-gray-800 uppercase leading-tight">{{ task.title }}</h4>
-                                        <p class="text-[9px] text-gray-400 font-bold uppercase mt-1">Vence: {{ new Date(task.due_date).toLocaleDateString() }}</p>
-                                    </div>
-                                    <span :class="getTaskStatus(task).class" class="px-3 py-1 rounded-full text-[8px] font-black uppercase border flex items-center gap-1">
-                                        <component :is="getTaskStatus(task).icon" class="w-2 h-2" />
-                                        {{ getTaskStatus(task).label }}
-                                    </span>
-                                </div>
-
-                                <!-- Botón para ir a la tarea -->
-                                <Link :href="route('student.tasks.show', task.id)"
-                                      class="block w-full text-center py-2.5 bg-gray-50 text-gray-900 rounded-xl text-[9px] font-black uppercase hover:bg-indigo-600 hover:text-white transition-all">
-                                    {{ task.my_submission ? 'Ver Mi Entrega' : 'Realizar Entrega' }}
-                                </Link>
-
-                                <!-- Feedback si está calificado -->
-                                <div v-if="task.my_submission?.teacher_feedback" class="p-3 bg-amber-50 rounded-xl border border-amber-100">
-                                    <span class="flex items-center text-[8px] font-black text-amber-700 uppercase mb-1">
-                                        <MessageSquare class="w-2 h-2 mr-1" /> Nota del Docente:
-                                    </span>
-                                    <p class="text-[9px] text-amber-800 italic leading-tight">{{ task.my_submission.teacher_feedback }}</p>
-                                </div>
-                            </div>
-                            <p v-if="unit.tasks.length === 0" class="text-[10px] text-gray-300 italic ml-2">No hay tareas pendientes.</p>
-                        </div>
-
-                        <!-- BLOQUE DE FOROS DE DEBATE (NUEVO) -->
-                        <div class="mt-6 space-y-3">
-                            <h3 class="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center ml-2">
-                                <MessageSquare class="w-3 h-3 mr-2 text-purple-500" /> Espacios de Debate
-                            </h3>
-
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div v-for="forum in unit.forums" :key="forum.id"
-                                    class="bg-white p-5 rounded-[2rem] border border-gray-100 shadow-sm flex items-center justify-between hover:border-purple-200 transition-all group">
-
-                                    <div class="flex items-center gap-4">
-                                        <div class="bg-purple-50 text-purple-600 p-3 rounded-2xl">
-                                            <MessagesSquare class="w-5 h-5" />
-                                        </div>
-                                        <div>
-                                            <h4 class="text-xs font-black text-gray-800 uppercase leading-tight">{{ forum.title }}</h4>
-                                            <span class="text-[8px] font-bold text-gray-400 uppercase">{{ forum.posts_count }} Intervenciones</span>
-                                        </div>
-                                    </div>
-
-                                    <Link :href="route('student.forums.show', forum.id)"
-                                        class="p-3 bg-gray-900 text-white rounded-xl hover:bg-purple-600 transition-all transform active:scale-95">
-                                        <ArrowRight class="w-4 h-4" />
-                                    </Link>
-                                </div>
-                            </div>
-                            <p v-if="unit.forums.length === 0" class="text-[10px] text-gray-300 italic ml-2">No hay foros abiertos en esta unidad.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
         </div>
     </AppLayout>
 </template>

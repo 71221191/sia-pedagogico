@@ -18,7 +18,9 @@ class CourseSection extends Model
         'vacancy_limit',
         'is_closed',
         'acta_number',
-        'acta_close_date'
+        'acta_close_date',
+        'syllabus_path',
+        'syllabus_name'
     ];
 
     protected $casts = [
@@ -26,13 +28,6 @@ class CourseSection extends Model
         'acta_close_date' => 'datetime',
     ];
 
-    // --- RELACIONES ---
-
-    // 1. NUEVA: Una sección tiene muchas sesiones de asistencia
-    public function classSessions()
-    {
-        return $this->hasMany(ClassSession::class, 'course_section_id');
-    }
 
     public function course()
     {
@@ -44,7 +39,7 @@ class CourseSection extends Model
         return $this->belongsTo(AcademicPeriod::class);
     }
 
-    // 2. CORREGIDA: El docente ahora apunta a Person (ID 2578) y no a User (ID 2579)
+    // El docente apunta a Person (ID 2578)
     public function teacher()
     {
         return $this->belongsTo(Person::class, 'teacher_id');
@@ -55,29 +50,11 @@ class CourseSection extends Model
         return $this->hasMany(EnrollmentDetail::class, 'course_section_id');
     }
 
-    public function portfolios() {
-        return $this->hasMany(TeacherPortfolio::class);
-        }
-
-    // Un "Helper" para saber si tiene el sílabo aprobado
-    public function isSyllabusApproved() {
-        return $this->portfolios()
-            ->where('type', 'syllabus')
-            ->where('status', 'approved')
-            ->exists();
-    }
     /**
      * Obtener el turno asociado a esta sección.
      */
     public function shift()
     {
         return $this->belongsTo(Shift::class, 'shift_id');
-    }
-    /**
-     * Obtener las unidades académicas (I, II, III...) de este curso.
-     */
-    public function academicUnits(): \Illuminate\Database\Eloquent\Relations\HasMany
-    {
-        return $this->hasMany(AcademicUnit::class)->orderBy('order');
     }
 }

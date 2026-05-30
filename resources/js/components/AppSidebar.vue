@@ -15,7 +15,22 @@ import {
 import { dashboard } from '@/routes';
 import { type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/vue3';
-import { BookOpen, Folder, LayoutGrid, ReceiptText, ClipboardList, FileSearch, School,ClipboardCheck, Users, Search, GraduationCap, BookMarked, DoorOpen, CalendarCheck, Calendar, Upload } from 'lucide-vue-next';
+import {
+    BookOpen,
+    Folder,
+    LayoutGrid,
+    ClipboardList,
+    School,
+    ClipboardCheck,
+    Users,
+    Search,
+    GraduationCap,
+    BookMarked,
+    DoorOpen,
+    CalendarCheck,
+    Calendar,
+    Upload
+} from 'lucide-vue-next'; // Removemos FileSearch que ya no se usará
 import AppLogo from './AppLogo.vue';
 
 // Importación de rutas (Asegúrate de que estos archivos existan en tu proyecto)
@@ -51,11 +66,6 @@ const isTreasury = computed(() => {
 const isTeacher = computed(() => {
     const roles = user.value?.roles as string[] | undefined;
     return Array.isArray(roles) && roles.includes('docente');
-});
-
-const isHeadOfArea = computed(() => {
-    const roles = user.value?.roles as string[] | undefined;
-    return Array.isArray(roles) && roles.includes('jefe_de_area');
 });
 
 // 3. Menús Estáticos
@@ -97,8 +107,8 @@ const adminNavItems: NavItem[] = [
     },
     {
         title: 'Catálogo de Competencias',
-        href: '/admin/competencias', // Definiremos esta ruta ahora
-        icon: BookOpen, // Usa un icono de catálogo o libro
+        href: '/admin/competencias',
+        icon: BookOpen,
     },
     {
         title: 'Centros de Práctica',
@@ -113,7 +123,7 @@ const adminNavItems: NavItem[] = [
     {
         title: 'Grados y Títulos',
         href: route('admin.thesis.index'),
-        icon: GraduationCap, // O BookMarked
+        icon: GraduationCap,
     },
     {
         title: 'Gestión de Aulas',
@@ -123,14 +133,16 @@ const adminNavItems: NavItem[] = [
     {
         title: 'Carga Masiva (Excel)',
         href: route('admin.imports.index'),
-        icon: Upload, // O FileSpreadsheet
+        icon: Upload,
     },
 ];
 
+// Menú del Estudiante Ajustado (Se eliminó "Mi Semestre" interno y se agregó "Mis Cursos")
 const studentNavItems: NavItem[] = [
     { title: 'Ficha Socioeconómica', href: route('socioeconomic.create'), icon: Folder },
-    { title: 'Mi Progreso / Notas', href: route('student.progress.index'), icon: ClipboardList },
-    { title: 'Mis Pagos / Tesorería', href: route('payments.index'), icon: BookOpen },
+    { title: 'Récord de Notas', href: route('student.progress.index'), icon: ClipboardList },
+    { title: 'Mis Cursos', href: route('student.courses.index'), icon: BookOpen }, // NUEVO BOTÓN
+    { title: 'Mis Pagos / Tesorería', href: route('payments.index'), icon: Folder },
     { title: 'Matrícula', href: route('enrollment.create'), icon: Folder },
     { title: 'Mi Tesis / Grados', href: route('student.thesis.index'), icon: BookMarked },
     {
@@ -143,8 +155,8 @@ const studentNavItems: NavItem[] = [
 const treasuryNavItems = [
     {
         title: 'Validar Pagos',
-        href: '/tesoreria/validar-pagos', // La ruta que creamos en web.php
-        icon: LayoutGrid, // Puedes usar ReceiptText si lo importaste
+        href: '/tesoreria/validar-pagos',
+        icon: LayoutGrid,
     },
 ];
 
@@ -159,10 +171,9 @@ const teacherNavItems = [
         href: route('teacher.practice.index'),
         icon: Users,
     },
-    // --- AÑADIMOS ESTE NUEVO BOTÓN ---
     {
         title: 'Revisión de Tesis',
-        href: route('teacher.thesis-review.index'), // <--- Nombre limpio y correcto
+        href: route('teacher.thesis-review.index'),
         icon: Search,
     },
     {
@@ -172,14 +183,7 @@ const teacherNavItems = [
     },
 ];
 
-const headOfAreaItems: NavItem[] = [
-    {
-        title: 'Validar Portafolios',
-        // Usamos el nombre de la ruta que pusimos en web.php
-        href: route('head_of_area.portfolio.index'),
-        icon: FileSearch,
-    },
-];
+// Eliminamos headOfAreaItems y el condicional de validación de portafolio
 
 // 4. Menú Principal Dinámico
 const mainNavItems = computed(() => {
@@ -191,7 +195,6 @@ const mainNavItems = computed(() => {
         },
     ];
 
-    // Usamos .value para leer los computed
     if (isAdmin.value) {
         items.push(...adminNavItems);
     }
@@ -206,9 +209,6 @@ const mainNavItems = computed(() => {
 
     if (isTeacher.value) {
         items.push(...teacherNavItems);
-    }
-    if (isHeadOfArea.value || isAdmin.value) {
-        items.push(...headOfAreaItems);
     }
 
     return items;

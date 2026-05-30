@@ -180,7 +180,7 @@ download.head = (args: { import: number | { id: number } } | [importParam: numbe
     
     download.form = downloadForm
 /**
- * @see routes/web.php:339
+ * @see routes/web.php:297
  * @route '/admin/importaciones'
  */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -194,7 +194,7 @@ index.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
- * @see routes/web.php:339
+ * @see routes/web.php:297
  * @route '/admin/importaciones'
  */
 index.url = (options?: RouteQueryOptions) => {
@@ -202,7 +202,7 @@ index.url = (options?: RouteQueryOptions) => {
 }
 
 /**
- * @see routes/web.php:339
+ * @see routes/web.php:297
  * @route '/admin/importaciones'
  */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -210,7 +210,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     method: 'get',
 })
 /**
- * @see routes/web.php:339
+ * @see routes/web.php:297
  * @route '/admin/importaciones'
  */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -219,7 +219,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
     /**
- * @see routes/web.php:339
+ * @see routes/web.php:297
  * @route '/admin/importaciones'
  */
     const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -228,7 +228,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     })
 
             /**
- * @see routes/web.php:339
+ * @see routes/web.php:297
  * @route '/admin/importaciones'
  */
         indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -236,7 +236,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
             method: 'get',
         })
             /**
- * @see routes/web.php:339
+ * @see routes/web.php:297
  * @route '/admin/importaciones'
  */
         indexForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({

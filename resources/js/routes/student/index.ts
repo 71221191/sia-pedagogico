@@ -1,13 +1,12 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../wayfinder'
 import progress from './progress'
+import courses from './courses'
 import schedule7539d9 from './schedule'
 import thesis from './thesis'
-import courses from './courses'
-import tasks from './tasks'
-import forums from './forums'
+import enrollment from './enrollment'
 /**
 * @see \App\Http\Controllers\Student\ProgressController::schedule
- * @see app/Http/Controllers/Student/ProgressController.php:177
+ * @see app/Http/Controllers/Student/ProgressController.php:124
  * @route '/estudiante/mi-horario'
  */
 export const schedule = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -22,7 +21,7 @@ schedule.definition = {
 
 /**
 * @see \App\Http\Controllers\Student\ProgressController::schedule
- * @see app/Http/Controllers/Student/ProgressController.php:177
+ * @see app/Http/Controllers/Student/ProgressController.php:124
  * @route '/estudiante/mi-horario'
  */
 schedule.url = (options?: RouteQueryOptions) => {
@@ -31,7 +30,7 @@ schedule.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Student\ProgressController::schedule
- * @see app/Http/Controllers/Student/ProgressController.php:177
+ * @see app/Http/Controllers/Student/ProgressController.php:124
  * @route '/estudiante/mi-horario'
  */
 schedule.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -40,7 +39,7 @@ schedule.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 /**
 * @see \App\Http\Controllers\Student\ProgressController::schedule
- * @see app/Http/Controllers/Student/ProgressController.php:177
+ * @see app/Http/Controllers/Student/ProgressController.php:124
  * @route '/estudiante/mi-horario'
  */
 schedule.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -50,7 +49,7 @@ schedule.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
     /**
 * @see \App\Http\Controllers\Student\ProgressController::schedule
- * @see app/Http/Controllers/Student/ProgressController.php:177
+ * @see app/Http/Controllers/Student/ProgressController.php:124
  * @route '/estudiante/mi-horario'
  */
     const scheduleForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -60,7 +59,7 @@ schedule.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
             /**
 * @see \App\Http\Controllers\Student\ProgressController::schedule
- * @see app/Http/Controllers/Student/ProgressController.php:177
+ * @see app/Http/Controllers/Student/ProgressController.php:124
  * @route '/estudiante/mi-horario'
  */
         scheduleForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -69,7 +68,7 @@ schedule.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
         })
             /**
 * @see \App\Http\Controllers\Student\ProgressController::schedule
- * @see app/Http/Controllers/Student/ProgressController.php:177
+ * @see app/Http/Controllers/Student/ProgressController.php:124
  * @route '/estudiante/mi-horario'
  */
         scheduleForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -85,11 +84,10 @@ schedule.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     schedule.form = scheduleForm
 const student = {
     progress: Object.assign(progress, progress),
+courses: Object.assign(courses, courses),
 schedule: Object.assign(schedule, schedule7539d9),
 thesis: Object.assign(thesis, thesis),
-courses: Object.assign(courses, courses),
-tasks: Object.assign(tasks, tasks),
-forums: Object.assign(forums, forums),
+enrollment: Object.assign(enrollment, enrollment),
 }
 
 export default student

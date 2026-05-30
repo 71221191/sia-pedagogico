@@ -13,6 +13,20 @@ use Exception;
 
 class EnrollmentService
 {
+    /**
+     * Obtiene de manera dinámica el turno (shift_id) asignado al estudiante
+     */
+    public function getStudentAssignedShift(Person $person)
+    {
+        // Buscamos su última matrícula en el historial
+        $lastEnrollment = Enrollment::where('person_id', $person->id)
+            ->orderBy('created_at', 'desc')
+            ->first();
+
+        // Si ya tiene una matrícula, usamos ese turno; de lo contrario, por defecto Mañana (1)
+        return $lastEnrollment ? $lastEnrollment->shift_id : 1;
+    }
+
     public function registerEnrollment(User $user, array $sectionIds)
     {
         return DB::transaction(function () use ($user, $sectionIds) {
@@ -21,15 +35,16 @@ class EnrollmentService
             $person = Person::where('user_id', $user->id)->firstOrFail();
             $period = AcademicPeriod::where('status', 'open')->firstOrFail();
 
-            // --- TU LÓGICA DE PRERREQUISITOS (INTEGRADA AQUÍ) ---
-            // Obtenemos los IDs de los cursos que el alumno YA aprobó en el pasado
+            // Obtenemos su turno asignado real
+            $assignedShiftId = $this->getStudentAssignedShift($person);
+
+            // Obtenemos los IDs de los cursos que el alumno ya aprobó en el pasado
             $approvedCourseIds = DB::table('enrollment_details')
                 ->join('enrollments', 'enrollment_details.enrollment_id', '=', 'enrollments.id')
                 ->where('enrollments.person_id', $person->id)
                 ->where('enrollment_details.status', 'approved')
                 ->pluck('enrollment_details.course_id')
                 ->toArray();
-            // ----------------------------------------------------
 
             // 2. BUSCAR O CREAR LA CABECERA (Solo una por alumno/periodo)
             $enrollment = Enrollment::firstOrCreate(
@@ -38,10 +53,10 @@ class EnrollmentService
                     'academic_period_id' => $period->id,
                 ],
                 [
-                    'study_plan_id' => $person->study_plan_id, // OJO: Idealmente sacar del alumno ($person->study_plan_id)
-                    'cycle' => 'I',
+                    'study_plan_id' => $person->study_plan_id,
+                    'cycle' => 'I', // Se calculará de forma automática en base a sus cursos
                     'enrollment_type_id' => 1,
-                    'shift_id' => 1,
+                    'shift_id' => $assignedShiftId, // Guardamos su turno real
                     'section_label' => 'A',
                     'created_at' => now(),
                 ]
@@ -50,17 +65,24 @@ class EnrollmentService
             // 3. PROCESAR CADA CURSO (Detalles)
             foreach ($sectionIds as $sectionId) {
 
-                // --- BLOQUEO DE BASE DE DATOS (Anti-Overbooking) ---
+                // Bloqueo de concurrencia para evitar sobreventa de vacantes
                 $section = CourseSection::lockForUpdate()->with('course.prerequisites')->find($sectionId);
 
-                if (!$section) throw new Exception("Una sección seleccionada ya no existe.");
-
-                // A. Validación: Vacantes
-                if ($section->vacancy_limit <= 0) {
-                    throw new Exception("El curso '{$section->name}' se acaba de llenar. Intenta con otra sección.");
+                if (!$section) {
+                    throw new Exception("Una sección seleccionada ya no existe.");
                 }
 
-                // B. Validación: Prerrequisitos (TU LÓGICA)
+                // A. Validación de Vacantes
+                if ($section->vacancy_limit <= 0) {
+                    throw new Exception("El curso '{$section->course->name}' se acaba de llenar. Intenta con otra sección.");
+                }
+
+                // B. Validación de Turno (Seguridad del Backend)
+                if ($section->shift_id !== $assignedShiftId) {
+                    throw new Exception("No puedes matricularte en la sección '{$section->name}' porque pertenece a un turno distinto al tuyo.");
+                }
+
+                // C. Validación de Prerrequisitos
                 foreach ($section->course->prerequisites as $prereq) {
                     if (!in_array($prereq->prerequisite_course_id, $approvedCourseIds)) {
                         $nombreRequerido = Course::find($prereq->prerequisite_course_id)->name ?? 'Desconocido';
@@ -68,11 +90,11 @@ class EnrollmentService
                     }
                 }
 
-                // C. Validación: No duplicar curso (Si ya lo tiene en detalles)
+                // D. Evitar duplicados en la misma sección
                 $exists = $enrollment->details()->where('course_section_id', $section->id)->exists();
-                if ($exists) continue; // Si ya lo tiene, saltamos tranquilamente
+                if ($exists) continue;
 
-                // D. Validación: No llevar el mismo curso en dos secciones diferentes
+                // E. Evitar matricularse en el mismo curso en dos secciones diferentes
                 $cursoDuplicado = $enrollment->details()->where('course_id', $section->course_id)->exists();
                 if ($cursoDuplicado) {
                     throw new Exception("Ya estás inscrito en el curso '{$section->course->name}' en otra sección.");
@@ -98,13 +120,13 @@ class EnrollmentService
 
     public function getAvailableSectionsWithStatus(Person $person, AcademicPeriod $period)
     {
-        // 0. Buscamos el Plan de Estudios REAL del alumno desde su matrícula
-        $currentEnrollment = Enrollment::where('person_id', $person->id)
-            ->where('academic_period_id', $period->id)
-            ->first();
+        // Determinamos el plan de estudios del alumno
+        $planId = $person->study_plan_id ?? 0;
 
-        $planId = $currentEnrollment ? $currentEnrollment->study_plan_id : 0;
-        // 1. Cursos APROBADOS en el pasado
+        // Obtenemos su turno asignado
+        $assignedShiftId = $this->getStudentAssignedShift($person);
+
+        // 1. Cursos aprobados en el pasado
         $approvedCourseIds = DB::table('enrollment_details')
             ->join('enrollments', 'enrollment_details.enrollment_id', '=', 'enrollments.id')
             ->where('enrollments.person_id', $person->id)
@@ -112,7 +134,7 @@ class EnrollmentService
             ->pluck('enrollment_details.course_id')
             ->toArray();
 
-        // 2. NUEVA LÓGICA: Cursos ya MATRICULADOS en este periodo actual
+        // 2. Cursos ya matriculados en este periodo actual
         $alreadyEnrolledCourseIds = DB::table('enrollment_details')
             ->join('enrollments', 'enrollment_details.enrollment_id', '=', 'enrollments.id')
             ->where('enrollments.person_id', $person->id)
@@ -120,10 +142,11 @@ class EnrollmentService
             ->pluck('enrollment_details.course_id')
             ->toArray();
 
+        // 3. Traemos las secciones filtrando estrictamente por el turno asignado al alumno
         $sections = CourseSection::with(['course.prerequisites', 'teacher'])
             ->where('academic_period_id', $period->id)
+            ->where('shift_id', $assignedShiftId) // FILTRO ESTRICTO DE TURNO
             ->whereHas('course', function($q) use ($planId) {
-                // Ahora filtramos por el ID que sacamos de la matrícula, no de la persona
                 $q->where('study_plan_id', $planId);
             })
             ->get();
@@ -133,17 +156,17 @@ class EnrollmentService
             $status = 'available';
             $lockReason = null;
 
-            // REGLA A: ¿Ya lo aprobó antes?
+            // REGLA A: ¿Ya lo aprobó en el pasado?
             if (in_array($course->id, $approvedCourseIds)) {
                 $status = 'passed';
             }
-            // REGLA B (NUEVA): ¿Ya está matriculado en este ciclo?
+            // REGLA B: ¿Ya está matriculado en este periodo actual?
             elseif (in_array($course->id, $alreadyEnrolledCourseIds)) {
-                $status = 'enrolled'; // Estado nuevo
+                $status = 'enrolled';
                 $lockReason = "Ya estás matriculado en este curso.";
             }
             else {
-                // REGLA C: ¿Cumple prerrequisitos?
+                // REGLA C: ¿Cumple con los prerrequisitos?
                 foreach ($course->prerequisites as $prereq) {
                     if (!in_array($prereq->prerequisite_course_id, $approvedCourseIds)) {
                         $status = 'locked';
@@ -154,7 +177,7 @@ class EnrollmentService
                 }
             }
 
-            // REGLA D: Vacantes
+            // REGLA D: Cálculo de vacantes reales en base a detalles creados
             $inscritos = DB::table('enrollment_details')
                 ->where('course_section_id', $section->id)
                 ->count();
@@ -172,7 +195,7 @@ class EnrollmentService
                 'course_name' => $course->name,
                 'credits' => $course->credits,
                 'section_name' => $section->name,
-                'teacher_name' => $section->teacher ? $section->teacher->names : 'Por asignar',
+                'teacher_name' => $section->teacher ? $section->teacher->full_name : 'Por asignar',
                 'status' => $status, // 'available', 'locked', 'passed', 'no_vacancies', 'enrolled'
                 'lock_reason' => $lockReason,
                 'vacancy_limit' => $section->vacancy_limit,
@@ -183,21 +206,21 @@ class EnrollmentService
 
     public function checkAdministrativeRequirements(Person $person, AcademicPeriod $period)
     {
-        // 1. Check Ficha
+        // 1. Validar Ficha Socioeconómica aprobada
         $ficha = DB::table('socioeconomic_files')
             ->where('person_id', $person->id)
             ->where('academic_period_id', $period->id)
             ->first();
         $fichaOk = ($ficha && $ficha->is_validated);
 
-        // 2. Check Biblioteca (Si no hay registro o debt es 0, está OK)
+        // 2. Validar que no tenga deudas de libros en biblioteca
         $lastEnrollment = DB::table('enrollments')
             ->where('person_id', $person->id)
             ->orderBy('created_at', 'desc')
             ->first();
         $bibliotecaOk = !($lastEnrollment && $lastEnrollment->library_debt);
 
-        // 3. Check Pago / Beca
+        // 3. Validar pago de matrícula o beca activa
         $tieneBeca = !is_null($person->scholarship_type_id) && $person->scholarship_type_id > 1;
         $pagoOk = $tieneBeca || DB::table('payments')
             ->where('person_id', $person->id)
@@ -206,47 +229,12 @@ class EnrollmentService
             ->exists();
 
         return [
-            'can_enroll' => ($fichaOk && $bibliotecaOk && $pagoOk), // Solo si los 3 son true
+            'can_enroll' => ($fichaOk && $bibliotecaOk && $pagoOk),
             'details' => [
                 'ficha' => $fichaOk,
                 'biblioteca' => $bibliotecaOk,
                 'pago' => $pagoOk,
             ]
         ];
-    }
-
-    public function autoEnrollStudentByPayment(Person $person, AcademicPeriod $period)
-    {
-        // 1. Buscamos la cabecera de matrícula de Anderson para este periodo
-        $enrollment = Enrollment::where('person_id', $person->id)
-            ->where('academic_period_id', $period->id)
-            ->first();
-
-        if (!$enrollment) return; // Si no hay cabecera (importación previa), no hacemos nada
-
-        // 2. BUSCAMOS LAS SECCIONES QUE COINCIDAN:
-        // Anderson dice: "Soy de Matemática, Ciclo 9, Sección A, Turno Mañana"
-        // Buscamos todas las secciones que tengan esas mismas etiquetas
-        $matchingSections = CourseSection::where('academic_period_id', $period->id)
-            ->where('name', $enrollment->section_label)
-            ->where('shift_id', $enrollment->shift_id)
-            ->whereHas('course', function($q) use ($enrollment) {
-                $q->where('study_plan_id', $enrollment->study_plan_id)
-                ->where('cycle', $enrollment->cycle);
-            })
-            ->get();
-
-        // 3. LAS INSERTAMOS EN DETALLES (Si no existen)
-        foreach ($matchingSections as $section) {
-            $enrollment->details()->firstOrCreate(
-                ['course_id' => $section->course_id],
-                [
-                    'course_section_id' => $section->id,
-                    'status' => 'enrolled',
-                    'attempt_number' => 1,
-                    'is_legacy' => false
-                ]
-            );
-        }
     }
 }

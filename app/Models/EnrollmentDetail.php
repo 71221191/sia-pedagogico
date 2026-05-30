@@ -13,7 +13,7 @@ class EnrollmentDetail extends Model
         'final_score_numeric',
         'is_legacy',
         'status',
-        'attempt_number'
+        'attempt_number',
     ];
 
     // --- RELACIONES ---

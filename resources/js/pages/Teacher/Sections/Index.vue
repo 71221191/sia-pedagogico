@@ -2,7 +2,7 @@
 import { Head, Link } from '@inertiajs/vue3';
 import {
     Users, BookOpen, ClipboardList, CheckCircle2,
-    AlertCircle, LayoutGrid, ArrowRight, FileText
+    AlertCircle, LayoutGrid, FileText
 } from 'lucide-vue-next';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { route } from 'ziggy-js';
@@ -11,7 +11,7 @@ const props = defineProps<{
     sections: any[]
 }>();
 
-// Función Maestra de Colores Pastel (La misma que usamos en el Horario)
+// Función Maestra de Colores Pastel
 const getCourseColor = (courseId: number) => {
     const colors = [
         'bg-blue-50 text-blue-700 border-blue-200',
@@ -43,7 +43,7 @@ const toRoman = (num: any) => {
                     <LayoutGrid class="mr-3 w-8 h-8 text-emerald-600" />
                     Carga Académica Actual
                 </h1>
-                <p class="text-gray-500 font-bold text-xs uppercase tracking-widest mt-2">Gestiona tus notas, asistencia y portafolio</p>
+                <p class="text-gray-500 font-bold text-xs uppercase tracking-widest mt-2">Gestiona tus notas y sílabos</p>
             </div>
 
             <!-- Grid de Tarjetas -->
@@ -79,38 +79,23 @@ const toRoman = (num: any) => {
                             </div>
                         </div>
 
-                        <!-- Botones de Acción Pro -->
-                        <!-- Busca el grid de botones en la tarjeta y cámbialo por este de 5 botones -->
+                        <!-- Botones de Acción Modificados (Limpio y Estético) -->
                         <div class="grid grid-cols-2 gap-3 pt-2">
                             <!-- 1. NOTAS -->
                             <Link :href="route('teacher.sections.show', section.id)"
-                                class="flex flex-col items-center gap-2 p-3 bg-gray-50 rounded-2xl hover:bg-gray-900 hover:text-white transition-all">
+                                class="flex flex-col items-center justify-center gap-2 p-3 bg-gray-50 rounded-2xl hover:bg-gray-900 hover:text-white transition-all">
                                 <CheckCircle2 class="w-5 h-5 text-indigo-600" />
                                 <span class="text-[8px] font-black uppercase">Notas</span>
                             </Link>
 
-                            <!-- 2. ASISTENCIA -->
-                            <Link :href="route('teacher.attendance.index', section.id)"
-                                class="flex flex-col items-center gap-2 p-3 bg-gray-50 rounded-2xl hover:bg-emerald-600 hover:text-white transition-all">
-                                <Users class="w-5 h-5 text-emerald-600" />
-                                <span class="text-[8px] font-black uppercase">Asistencia</span>
-                            </Link>
-
-                            <!-- 3. ESTRUCTURA (UNIDADES) -->
-                            <Link :href="route('teacher.units.index', section.id)"
-                                class="flex flex-col items-center gap-2 p-3 bg-gray-50 rounded-2xl hover:bg-blue-600 hover:text-white transition-all">
-                                <LayoutGrid class="w-5 h-5 text-blue-600" />
-                                <span class="text-[8px] font-black uppercase">Estructura</span>
-                            </Link>
-
-                            <!-- 4. PORTAFOLIO -->
-                            <Link :href="route('teacher.portfolio.index', section.id)"
-                                class="flex flex-col items-center gap-2 p-3 bg-gray-50 rounded-2xl hover:bg-rose-600 hover:text-white transition-all">
+                            <!-- 2. SÍLABO -->
+                            <Link :href="route('teacher.syllabus.index', section.id)"
+                                class="flex flex-col items-center justify-center gap-2 p-3 bg-gray-50 rounded-2xl hover:bg-rose-600 hover:text-white transition-all">
                                 <FileText class="w-5 h-5 text-rose-600" />
-                                <span class="text-[8px] font-black uppercase">Portafolio</span>
+                                <span class="text-[8px] font-black uppercase">Sílabo</span>
                             </Link>
 
-                            <!-- 5. COMPETENCIAS (EL QUE FALTABA) -->
+                            <!-- 3. COMPETENCIAS (Abarca ambas columnas abajo) -->
                             <Link :href="route('teacher.sections.configure', section.id)"
                                 class="flex flex-col items-center justify-center gap-2 p-3 bg-amber-50 rounded-2xl hover:bg-amber-500 hover:text-white transition-all col-span-2">
                                 <div class="flex items-center gap-2">

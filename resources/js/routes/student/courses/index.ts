@@ -1,32 +1,107 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../wayfinder'
 /**
-* @see \App\Http\Controllers\Student\CourseContentController::show
- * @see app/Http/Controllers/Student/CourseContentController.php:17
- * @route '/estudiante/mis-cursos/{section}'
+* @see \App\Http\Controllers\Student\CourseController::index
+ * @see app/Http/Controllers/Student/CourseController.php:20
+ * @route '/estudiante/cursos'
  */
-export const show = (args: { section: number | { id: number } } | [section: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: index.url(options),
+    method: 'get',
+})
+
+index.definition = {
+    methods: ["get","head"],
+    url: '/estudiante/cursos',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\Student\CourseController::index
+ * @see app/Http/Controllers/Student/CourseController.php:20
+ * @route '/estudiante/cursos'
+ */
+index.url = (options?: RouteQueryOptions) => {
+    return index.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\Student\CourseController::index
+ * @see app/Http/Controllers/Student/CourseController.php:20
+ * @route '/estudiante/cursos'
+ */
+index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: index.url(options),
+    method: 'get',
+})
+/**
+* @see \App\Http\Controllers\Student\CourseController::index
+ * @see app/Http/Controllers/Student/CourseController.php:20
+ * @route '/estudiante/cursos'
+ */
+index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: index.url(options),
+    method: 'head',
+})
+
+    /**
+* @see \App\Http\Controllers\Student\CourseController::index
+ * @see app/Http/Controllers/Student/CourseController.php:20
+ * @route '/estudiante/cursos'
+ */
+    const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        action: index.url(options),
+        method: 'get',
+    })
+
+            /**
+* @see \App\Http\Controllers\Student\CourseController::index
+ * @see app/Http/Controllers/Student/CourseController.php:20
+ * @route '/estudiante/cursos'
+ */
+        indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: index.url(options),
+            method: 'get',
+        })
+            /**
+* @see \App\Http\Controllers\Student\CourseController::index
+ * @see app/Http/Controllers/Student/CourseController.php:20
+ * @route '/estudiante/cursos'
+ */
+        indexForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: index.url({
+                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                            _method: 'HEAD',
+                            ...(options?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
+            method: 'get',
+        })
+    
+    index.form = indexForm
+/**
+* @see \App\Http\Controllers\Student\CourseController::show
+ * @see app/Http/Controllers/Student/CourseController.php:57
+ * @route '/estudiante/cursos/{section}'
+ */
+export const show = (args: { section: string | number } | [section: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: show.url(args, options),
     method: 'get',
 })
 
 show.definition = {
     methods: ["get","head"],
-    url: '/estudiante/mis-cursos/{section}',
+    url: '/estudiante/cursos/{section}',
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see \App\Http\Controllers\Student\CourseContentController::show
- * @see app/Http/Controllers/Student/CourseContentController.php:17
- * @route '/estudiante/mis-cursos/{section}'
+* @see \App\Http\Controllers\Student\CourseController::show
+ * @see app/Http/Controllers/Student/CourseController.php:57
+ * @route '/estudiante/cursos/{section}'
  */
-show.url = (args: { section: number | { id: number } } | [section: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
+show.url = (args: { section: string | number } | [section: string | number ] | string | number, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { section: args }
     }
 
-            if (typeof args === 'object' && !Array.isArray(args) && 'id' in args) {
-            args = { section: args.id }
-        }
     
     if (Array.isArray(args)) {
         args = {
@@ -37,9 +112,7 @@ show.url = (args: { section: number | { id: number } } | [section: number | { id
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-                        section: typeof args.section === 'object'
-                ? args.section.id
-                : args.section,
+                        section: args.section,
                 }
 
     return show.definition.url
@@ -48,49 +121,49 @@ show.url = (args: { section: number | { id: number } } | [section: number | { id
 }
 
 /**
-* @see \App\Http\Controllers\Student\CourseContentController::show
- * @see app/Http/Controllers/Student/CourseContentController.php:17
- * @route '/estudiante/mis-cursos/{section}'
+* @see \App\Http\Controllers\Student\CourseController::show
+ * @see app/Http/Controllers/Student/CourseController.php:57
+ * @route '/estudiante/cursos/{section}'
  */
-show.get = (args: { section: number | { id: number } } | [section: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+show.get = (args: { section: string | number } | [section: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: show.url(args, options),
     method: 'get',
 })
 /**
-* @see \App\Http\Controllers\Student\CourseContentController::show
- * @see app/Http/Controllers/Student/CourseContentController.php:17
- * @route '/estudiante/mis-cursos/{section}'
+* @see \App\Http\Controllers\Student\CourseController::show
+ * @see app/Http/Controllers/Student/CourseController.php:57
+ * @route '/estudiante/cursos/{section}'
  */
-show.head = (args: { section: number | { id: number } } | [section: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+show.head = (args: { section: string | number } | [section: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: show.url(args, options),
     method: 'head',
 })
 
     /**
-* @see \App\Http\Controllers\Student\CourseContentController::show
- * @see app/Http/Controllers/Student/CourseContentController.php:17
- * @route '/estudiante/mis-cursos/{section}'
+* @see \App\Http\Controllers\Student\CourseController::show
+ * @see app/Http/Controllers/Student/CourseController.php:57
+ * @route '/estudiante/cursos/{section}'
  */
-    const showForm = (args: { section: number | { id: number } } | [section: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    const showForm = (args: { section: string | number } | [section: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
         action: show.url(args, options),
         method: 'get',
     })
 
             /**
-* @see \App\Http\Controllers\Student\CourseContentController::show
- * @see app/Http/Controllers/Student/CourseContentController.php:17
- * @route '/estudiante/mis-cursos/{section}'
+* @see \App\Http\Controllers\Student\CourseController::show
+ * @see app/Http/Controllers/Student/CourseController.php:57
+ * @route '/estudiante/cursos/{section}'
  */
-        showForm.get = (args: { section: number | { id: number } } | [section: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        showForm.get = (args: { section: string | number } | [section: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
             action: show.url(args, options),
             method: 'get',
         })
             /**
-* @see \App\Http\Controllers\Student\CourseContentController::show
- * @see app/Http/Controllers/Student/CourseContentController.php:17
- * @route '/estudiante/mis-cursos/{section}'
+* @see \App\Http\Controllers\Student\CourseController::show
+ * @see app/Http/Controllers/Student/CourseController.php:57
+ * @route '/estudiante/cursos/{section}'
  */
-        showForm.head = (args: { section: number | { id: number } } | [section: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        showForm.head = (args: { section: string | number } | [section: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
             action: show.url(args, {
                         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
                             _method: 'HEAD',
@@ -102,7 +175,8 @@ show.head = (args: { section: number | { id: number } } | [section: number | { i
     
     show.form = showForm
 const courses = {
-    show: Object.assign(show, show),
+    index: Object.assign(index, index),
+show: Object.assign(show, show),
 }
 
 export default courses

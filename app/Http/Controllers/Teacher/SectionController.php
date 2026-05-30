@@ -12,17 +12,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Helpers\NumberHelper;
 use Barryvdh\DomPDF\Facade\Pdf;
-use App\Services\AttendanceService;
 
 class SectionController extends Controller
 {
-    protected $attendanceService;
-
-    public function __construct(AttendanceService $attendanceService)
-    {
-        $this->attendanceService = $attendanceService;
-    }
-
     /**
      * Listado de cursos asignados al docente
      */
@@ -49,9 +41,6 @@ class SectionController extends Controller
         ]);
     }
 
-    /**
-     * La "Sábana de Notas" de una sección específica
-     */
     public function show(CourseSection $section)
     {
         // 1. Seguridad: Verificar que sea SU sección
@@ -60,7 +49,7 @@ class SectionController extends Controller
             abort(403, 'No tienes permiso para ver esta sección.');
         }
 
-        // 2. Cargar el curso con sus competencias (si es por competencias)
+        // 2. Cargar el curso con sus competencias
         $section->load(['course.competencies', 'academicPeriod']);
 
         // 3. Cargar los alumnos matriculados con sus notas actuales
@@ -76,23 +65,14 @@ class SectionController extends Controller
                 ];
             });
 
-        $attendanceStats = $this->attendanceService->getAttendanceWarning($section);
-        // 4. Cargar escala de notas (Logrado, Proceso, etc.) para los combos
+        // 4. Cargar escala de notas para los combos
         $gradeScales = GradeScale::all();
-
-        $isSyllabusApproved = $section->portfolios()
-            ->where('type', 'syllabus')
-            ->where('status', 'approved')
-            ->exists();
 
         return Inertia::render('Teacher/Sections/Show', [
             'section' => $section->load(['course.competencies', 'academicPeriod']),
             'students' => $students,
-            'attendanceStats' => $attendanceStats, // <--- Enviamos esto a Vue
-            'gradeScales' => GradeScale::all(),
-            'evaluationType' => $section->course->evaluation_type,
-            'isSyllabusApproved' => $isSyllabusApproved,
-            'gradeScales' => $gradeScales
+            'gradeScales' => $gradeScales,
+            'evaluationType' => $section->course->evaluation_type
         ]);
     }
 
@@ -105,7 +85,6 @@ class SectionController extends Controller
         }
 
         // 2. Validación: No se puede cerrar si faltan alumnos por calificar
-        // (Verificamos que todos tengan nota final calculada)
         $faltantes = $section->enrollmentDetails()->whereNull('final_score_numeric')->count();
         if ($faltantes > 0) {
             return back()->withErrors(['error' => "No puedes cerrar el acta. Faltan calificar {$faltantes} alumnos."]);
@@ -130,8 +109,8 @@ class SectionController extends Controller
         $selectedIds = $section->course->competencies->pluck('id')->toArray();
 
         return Inertia::render('Teacher/Sections/Configure', [
-            'section' => $section->load(['course.studyPlan', 'course.competencies']), // <--- LOAD MEJORADO
-            'catalog' => \App\Models\Domain::with('competencies')->get(), // <--- MEJOR: Traer dominios con sus hijos
+            'section' => $section->load(['course.studyPlan', 'course.competencies']),
+            'catalog' => \App\Models\Domain::with('competencies')->get(), // Traer dominios con sus hijos
             'selectedIds' => $section->course->competencies->pluck('id')->toArray()
         ]);
     }
@@ -144,11 +123,9 @@ class SectionController extends Controller
         ]);
 
         // --- BLOQUE DE SEGURIDAD NUEVO ---
-        // 1. Buscamos qué competencias tenía antes y ya no están en la nueva lista
         $currentIds = $section->course->competencies->pluck('id')->toArray();
         $removedIds = array_diff($currentIds, $request->competencies);
 
-        // 2. Verificamos si alguna de las que va a quitar ya tiene notas registradas
         $hasGrades = \App\Models\Grade::whereIn('competency_id', $removedIds)
             ->whereIn('enrollment_detail_id', $section->enrollmentDetails->pluck('id'))
             ->exists();
@@ -156,7 +133,6 @@ class SectionController extends Controller
         if ($hasGrades) {
             return back()->with('error', 'No puedes quitar una competencia que ya tiene notas registradas. Primero borra las notas en la sábana.');
         }
-        // ---------------------------------
 
         $section->course->competencies()->sync($request->competencies);
 
@@ -194,13 +170,11 @@ class SectionController extends Controller
             'numberHelper' => new NumberHelper()
         ]);
 
-        // El acta suele ser mejor en Horizontal (Landscape) si hay muchas competencias
         $pdf->setPaper('a4', 'landscape');
 
         return $pdf->stream("Acta_{$section->acta_number}.pdf");
     }
 
-    // Asegúrate de tener este helper también si no lo pusiste en este controlador
     private function convertImageToBase64($path) {
         if (!file_exists($path)) return null;
         $type = pathinfo($path, PATHINFO_EXTENSION);

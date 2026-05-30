@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Student;
 use App\Http\Controllers\Controller;
 use App\Models\Person;
 use App\Models\AcademicPeriod;
-use App\Services\AttendanceService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -17,62 +16,13 @@ use App\Models\Enrollment;
 
 class ProgressController extends Controller
 {
-    protected $attendanceService;
-
-    public function __construct(AttendanceService $attendanceService)
-    {
-        $this->attendanceService = $attendanceService;
-    }
-
     public function index()
     {
         $user = Auth::user();
         $person = $user->person;
         $openPeriod = AcademicPeriod::where('status', 'open')->first();
 
-        // --- 1. LÓGICA DE PROGRESO ACTUAL (LO QUE YA TENÍAS) ---
-        $currentProgress = [];
-        if ($openPeriod) {
-            $currentEnrollment = $person->enrollments()
-                ->where('academic_period_id', $openPeriod->id)
-                ->with(['details.course', 'details.courseSection'])
-                ->first();
-
-            if ($currentEnrollment) {
-                foreach ($currentEnrollment->details as $detail) {
-                    $attendanceStats = $this->attendanceService->getAttendanceWarning($detail->courseSection);
-
-                    // --- NUEVA LÓGICA DE DESGLOSE ---
-                    // Traemos las notas de las competencias que el docente configuró para este curso
-                    $competencyGrades = $detail->grades()
-                        ->with(['gradeScale']) // Para tener el nombre (Logrado, etc) y el valor
-                        ->join('competencies', 'grades.competency_id', '=', 'competencies.id')
-                        ->select('grades.*', 'competencies.code as comp_code')
-                        ->get()
-                        ->map(function($g) {
-                            return [
-                                'code'  => $g->comp_code, // Ej: C1
-                                'name'  => $g->gradeScale->name ?? '-', // Ej: Logrado
-                                'value' => $g->gradeScale->numeric_equivalent ?? 0,
-                            ];
-                        });
-
-                    $currentProgress[] = [
-                        'section_id'   => $detail->course_section_id,
-                        'course_name'  => $detail->course->name,
-                        'course_code'  => $detail->course->code,
-                        'current_grade' => $detail->final_score_numeric,
-                        'competencies' => $competencyGrades, // <--- ENVIAMOS EL ARRAY DE NOTAS
-                        'attendance'   => $attendanceStats[$person->id] ?? [
-                            'absences' => 0, 'percentage' => 0, 'is_danger' => false
-                        ]
-                    ];
-                }
-            }
-        }
-
-        // --- 2. LÓGICA DE HISTORIAL COMPLETO (KÁRDEX - NIVEL UNC) ---
-        // Traemos todas las matrículas agrupadas por periodo
+        // --- 1. LÓGICA DE HISTORIAL COMPLETO (KÁRDEX) ---
         $academicHistory = $person->enrollments()
             ->with(['academicPeriod', 'details.course'])
             ->get()
@@ -92,7 +42,7 @@ class ProgressController extends Controller
                 ];
             })->sortByDesc('period_name')->values();
 
-        // 3. OBTENER EL PROMEDIO Y PUESTO OFICIAL (Desde la tabla de rankings)
+        // 2. OBTENER EL PROMEDIO Y PUESTO OFICIAL (Desde la tabla de rankings)
         $rankingOficial = DB::table('academic_rankings')
             ->where('person_id', $person->id)
             ->join('academic_periods', 'academic_rankings.academic_period_id', '=', 'academic_periods.id')
@@ -100,21 +50,18 @@ class ProgressController extends Controller
             ->select('academic_rankings.*')
             ->first();
 
-        // 1. Recuperamos el total de créditos aprobados de toda su historia
+        // 3. Recuperamos el total de créditos aprobados de toda su historia
         $totalCredits = DB::table('enrollment_details')
             ->join('courses', 'enrollment_details.course_id', '=', 'courses.id')
             ->join('enrollments', 'enrollment_details.enrollment_id', '=', 'enrollments.id')
             ->where('enrollments.person_id', $person->id)
             ->where('enrollment_details.status', 'approved')
-            ->sum('courses.credits'); // Sumamos los créditos reales
+            ->sum('courses.credits');
 
         return Inertia::render('Student/Progress', [
-            'currentProgress' => $currentProgress,
             'academicHistory' => $academicHistory,
             'ppa' => $rankingOficial ? (float)$rankingOficial->weighted_average : 0,
             'totalCredits' => (int)$totalCredits,
-            'position' => $rankingOficial ? $rankingOficial->position : null,
-            'totalStudents' => $rankingOficial ? $rankingOficial->total_students : null,
             'studentName' => $person->names,
             'periodName' => $openPeriod->name ?? 'Sin periodo activo'
         ]);
@@ -191,7 +138,6 @@ class ProgressController extends Controller
                 ->join('enrollments', 'enrollment_details.enrollment_id', '=', 'enrollments.id')
                 ->where('enrollments.person_id', $person->id)
                 ->where('enrollments.academic_period_id', $period->id);
-                // Quitamos el ->where('status', 'enrolled') para que encuentre todo
         })
         ->get();
 
@@ -205,7 +151,7 @@ class ProgressController extends Controller
 
         return Inertia::render('Student/MySchedule', [
             'schedules' => $schedules,
-            'shiftId'   => $shiftId, // <--- ENVIAMOS EL ID DEL TURNO
+            'shiftId'   => $shiftId, // Enviamos el ID del turno
             'timeSlots' => \App\Models\TimeSlot::where('shift', $turnoNombre)
                             ->orderBy('start_time', 'asc') // Orden cronológico real
                             ->get(),
@@ -231,7 +177,7 @@ class ProgressController extends Controller
             ->first();
         $shiftName = ($enrollment && $enrollment->shift_id == 2) ? 'tarde' : 'mañana';
 
-        // 1. Reutilizamos tu lógica de mapeo (la que ya tenías para el PDF)
+        // 1. Reutilizamos tu lógica de mapeo
         $schedules = Schedule::with(['course', 'classroom', 'timeSlot', 'teacher'])
             ->where('academic_period_id', $period->id)
             ->whereIn('course_section_id', function($query) use ($person, $period) {
@@ -266,5 +212,4 @@ class ProgressController extends Controller
             "Horario_{$person->dni}.xlsx"
         );
     }
-
 }

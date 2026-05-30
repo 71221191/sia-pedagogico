@@ -79,7 +79,7 @@ pdf.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     pdf.form = pdfForm
 /**
 * @see \App\Http\Controllers\Student\ProgressController::excel
- * @see app/Http/Controllers/Student/ProgressController.php:220
+ * @see app/Http/Controllers/Student/ProgressController.php:166
  * @route '/estudiante/mi-horario/excel'
  */
 export const excel = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -94,7 +94,7 @@ excel.definition = {
 
 /**
 * @see \App\Http\Controllers\Student\ProgressController::excel
- * @see app/Http/Controllers/Student/ProgressController.php:220
+ * @see app/Http/Controllers/Student/ProgressController.php:166
  * @route '/estudiante/mi-horario/excel'
  */
 excel.url = (options?: RouteQueryOptions) => {
@@ -103,7 +103,7 @@ excel.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Student\ProgressController::excel
- * @see app/Http/Controllers/Student/ProgressController.php:220
+ * @see app/Http/Controllers/Student/ProgressController.php:166
  * @route '/estudiante/mi-horario/excel'
  */
 excel.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -112,7 +112,7 @@ excel.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 /**
 * @see \App\Http\Controllers\Student\ProgressController::excel
- * @see app/Http/Controllers/Student/ProgressController.php:220
+ * @see app/Http/Controllers/Student/ProgressController.php:166
  * @route '/estudiante/mi-horario/excel'
  */
 excel.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -122,7 +122,7 @@ excel.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
     /**
 * @see \App\Http\Controllers\Student\ProgressController::excel
- * @see app/Http/Controllers/Student/ProgressController.php:220
+ * @see app/Http/Controllers/Student/ProgressController.php:166
  * @route '/estudiante/mi-horario/excel'
  */
     const excelForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -132,7 +132,7 @@ excel.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
             /**
 * @see \App\Http\Controllers\Student\ProgressController::excel
- * @see app/Http/Controllers/Student/ProgressController.php:220
+ * @see app/Http/Controllers/Student/ProgressController.php:166
  * @route '/estudiante/mi-horario/excel'
  */
         excelForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -141,7 +141,7 @@ excel.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
         })
             /**
 * @see \App\Http\Controllers\Student\ProgressController::excel
- * @see app/Http/Controllers/Student/ProgressController.php:220
+ * @see app/Http/Controllers/Student/ProgressController.php:166
  * @route '/estudiante/mi-horario/excel'
  */
         excelForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
